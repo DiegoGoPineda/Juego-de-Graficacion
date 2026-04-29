@@ -6,7 +6,7 @@ from OpenGL.GLUT import *
 import math
 from Actions import state 
 
-cam_pos = [0.0, 1.5, 6.0]
+cam_pos = [0.0, 1.5, 8.0]
 yaw = 0.0
 pitch = 0.0
 
@@ -14,7 +14,7 @@ cam_speed = 0.2
 mouse_down = False
 last_mouse_x = 0
 last_mouse_y = 0
-
+"""
 def apply_camera():
     global cam_pos, yaw, pitch
     
@@ -25,7 +25,26 @@ def apply_camera():
     
     # Trasladamos el mundo inverso a la posición del gato
     glTranslatef(-state.gato_x, -1.5, -state.gato_z)
-
+"""
+def apply_camera():
+    global cam_pos, yaw, pitch
+    
+    # 1. Calculamos el punto medio entre los dos gatos
+    # Esto asegura que ambos salgan en pantalla
+    mid_x = (state.p1.x + state.p2.x) / 2.0
+    mid_z = (state.p1.z + state.p2.z) / 2.0
+    
+    # 2. Aplicamos transformaciones
+    # El zoom (Z)
+    glTranslatef(0, 0, -cam_pos[2]) 
+    
+    # Rotaciones del mouse
+    glRotatef(-pitch, 1.0, 0.0, 0.0)
+    glRotatef(-yaw, 0.0, 1.0, 0.0)
+    
+    # 3. Trasladamos el mundo al punto medio
+    # Usamos -1.0 en Y para que los gatos no queden tan pegados al borde inferior
+    glTranslatef(-mid_x, -1.0, -mid_z)
 
 def handle_special_keys(key, x, y):
     pass
@@ -66,7 +85,7 @@ def zoom_in():
 def zoom_out():
     global cam_pos
     # Alejamos la cámara aumentando Z
-    if cam_pos[2] < 20.0:
+    if cam_pos[2] < 30.0:
         cam_pos[2] += 0.5
     glutPostRedisplay()
 

@@ -4,21 +4,22 @@ from OpenGL.GLUT import *
 import sys
 from resources import escenario
 from Actions import state, camera, update,gestor_audio
-from Characteres import gato
+from Characteres import gato,lola
 from resources import input_handlers, grid
 
 show_instructions = True
 def init():
     glEnable(GL_DEPTH_TEST) 
-    glDisable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
+    glEnable(GL_LIGHTING) 
+    glEnable(GL_LIGHT0)      
     glEnable(GL_COLOR_MATERIAL)
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE)
-    glLightfv(GL_LIGHT0, GL_POSITION, [2.0,5.0,5.0,1.0])
-    glLightfv(GL_LIGHT0, GL_AMBIENT, [0.2,0.2,0.2,1.0])
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, [0.8,0.8,0.8,1.0])
-    glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0,1.0,1.0,1.0])
-    glClearColor(252.0, 252.0, 252.0, 1.0)
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+    
+    glLightfv(GL_LIGHT0, GL_POSITION, [2.0, 5.0, 5.0, 1.0])
+    glLightfv(GL_LIGHT0, GL_AMBIENT, [0.2, 0.2, 0.2, 1.0])
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, [0.8, 0.8, 0.8, 1.0])
+    glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+    glClearColor(0.9, 0.9, 0.9, 1.0)
 
 def draw_text(x, y, text):
     glDisable(GL_LIGHTING)
@@ -40,17 +41,16 @@ def show_menu():
     glLoadIdentity()
 
     instructions = [
-        "--- CONTROL DE Timoteo ---",
-        "0: Ocultar/Mostrar Menu",
-        "1-7: neutral, feliz, triste, ira, sorpresa",
-        "6, 7: Miedo (Sacudir), Interes",
-        "W: Saltar, A: Girar, S: Caminar",
-        "D: Cola, I: Parpadeo, J: Patas Arriba",
-        "K: Saludar, L: Mover Orejas",
-        "FLECHAS: Mover",
-        "O Activar/Desactivar audio",
-        "Z-M: Movimientos con la camara",
-        "Desarrollado por Diego P, TIMOTEO EN 3D",
+        "--- CONTROLES MULTIJUGADOR ---",
+        "TIMOTEO (P1): WASD para mover",
+        "   Acciones: Q (Cola), E (Ojos), R (Salto), F (Saludar)",
+        "LOLA (P2): FLECHAS para mover",
+        "   Acciones: Automaticas por colision",
+        "-------------------------------",
+        "1-7: Cambiar Escenario (Ambos)",
+        "0: Mostrar/Ocultar Menu",
+        "O: Activar/Desactivar audio",
+        "Z-M: Controles de Camara",
         "ESC: Salir"
     ]
     y_pos = 570
@@ -84,15 +84,18 @@ def display():
     escenario.draw_scenery(state.scenario)
     #Dibujar gato
     glPushMatrix()
-    glTranslate(state.gato_x,0,state.gato_z)
-    #glRotate(state.rotate_x,0,1,0)
-    #glRotate(state.rotate_y,1,0,0)
-    gato.draw_gato_full() # Dibuja el gato completo (cuerpo, patas, cabeza, boca, cola, collar)
+    glTranslatef(state.p1.x, state.p1.y, state.p1.z)
+    gato.draw_gato_full(state.p1) # Dibuja el gato completo jugador 1
+    glPopMatrix()
+    #dibuja a a lola
+    glPushMatrix()
+    glTranslatef(state.p2.x, state.p2.y, state.p2.z)
+    lola.draw_gato_full(state.p2) # Dibuja la lola completa jugador 2
+    glPopMatrix()
     if state.show_instructions:
         show_menu()
         
     glutSwapBuffers()
-    glPopMatrix()
 
 def reshape(w, h):
     if h==0:
@@ -122,7 +125,8 @@ def main():
     glutMouseFunc(input_handlers.mouse)
     glutMotionFunc(input_handlers.motion)
     glutTimerFunc(16, update.update, 0)
-    
+    glutKeyboardUpFunc(input_handlers.keyboard_up)
+    glutSpecialUpFunc(input_handlers.keyboard_special_up)
     glutMainLoop()
    
 if __name__ == "__main__":

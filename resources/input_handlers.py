@@ -23,42 +23,41 @@ def motion(x, y):
 
 def special_keys(key, x, y):
     paso = 0.5 
+    # teclas para mover a lola (jugador 2)
     if key == GLUT_KEY_UP: 
-        state.gato_z -= paso; state.walking = True
+        state.p2.z -= paso; state.p2.walking = True
     elif key == GLUT_KEY_DOWN:
-         state.gato_z += paso; state.walking = True
+         state.p2.z += paso; state.p2.walking = True
     elif key == GLUT_KEY_LEFT: 
-        state.gato_x -= paso; state.walking = True
+        state.p2.x -= paso; state.p2.walking = True
     elif key == GLUT_KEY_RIGHT: 
-        state.gato_x += paso; state.walking = True
-
-    # Verificación de colisiones con los objetos del escenario
-    state.hay_choque = any(obj.check_collision(state.gato_x, state.gato_z, 1.5) 
-                        for obj in state.objetos_escenas)
+        state.p2.x += paso; state.p2.walking = True
+    
     glutPostRedisplay()
-
+"""
 def keyboard(key, x, y):
     b = key 
-    
-    # escenarios-
     if b in [b'1', b'2', b'3', b'4', b'5', b'6', b'7']:
         mapping = {
-            b'1': ("neutral", 1), b'2': ("happy", 2), b'3': ("sad", 3),
-            b'4': ("angry", 4), b'5': ("surprised", 5), b'6': ("fear", 6),
-            b'7': ("interest", 7)
+            b'1': ("neutral", 1, None),    # Parque - Normal
+            b'2': ("happy", 2, "jump"),    # Callejón - Salta de alegría
+            b'3': ("sad", 3, "shake"),     # Teatro - Tiembla de pena
+            b'4': ("angry", 4, "spin"),    # Nieve - Gira de coraje
+            b'5': ("surprised", 5, "jump"),# Volcán - Salta del susto
+            b'6': ("fear", 6, "shake"),    # Desierto - Tiembla de miedo
+            b'7': ("interest", 7, "spin")  # Espacio - Gira de curiosidad
         }
-        exp, scn = mapping[b]
+        
+        exp, scn, react = mapping[b]
+        #expresiones
         state.expression = exp
+        # escenearios
         state.scenario = scn
-        
-        if b == b'6': # Caso especial para el miedo
-            state.reaction_type, state.reaction_timer = "shake", 0
-        
-        # sonidos
+        state.reaction_type = react
+        state.reaction_timer = 0  
+        # Sonidos vinculados
         gestor_audio.play_action_sound(state.expression)
         gestor_audio.play_background_music(state.scenario)
-
-    # --- animaciones-
     elif b == b'w': 
         state.reaction_type, state.reaction_timer = "jump", 0
     elif b == b'a': 
@@ -75,8 +74,7 @@ def keyboard(key, x, y):
         state.ears_twitching = not state.ears_twitching
     elif b == b'j':
         state.front_paws_up_active = not state.front_paws_up_active
-    
-    # instruccion y quitar musica
+
     elif b == b'0': 
         state.show_instructions = not state.show_instructions
     elif b == b'o':
@@ -86,7 +84,6 @@ def keyboard(key, x, y):
         else:
             pygame.mixer.music.unpause()
     
-    # Controles de camara
     elif b == b'z': camera.zoom_in()
     elif b == b'x': camera.zoom_out()
     elif b == b'c': camera.reset_camera()
@@ -94,8 +91,93 @@ def keyboard(key, x, y):
     elif b == b'b': camera.view_side()
     elif b == b'n': camera.view_front_close()
     elif b == b'm': camera.view_rear()
-    
-    elif key == b'\x1b': # Tecla ESC para salir
+    elif key == b'\x1b': 
+        glutLeaveMainLoop()
+    glutPostRedisplay()
+"""
+#Versión mejorada para Multijugador y más controles de animación
+def keyboard(key, x, y):
+    b = key 
+    paso = 0.5
+    # 1. movimientos timoteo
+    if b == b'w': 
+        state.p1.z -= paso
+        state.p1.walking = True
+    elif b == b's': 
+        state.p1.z += paso
+        state.p1.walking = True
+    elif b == b'a': 
+        state.p1.x -= paso
+        state.p1.walking = True
+    elif b == b'd': 
+        state.p1.x += paso
+        state.p1.walking = True
+
+    # 2. ANIMACIONES MANUALES TIMOTEO (p1)
+    # Usamos teclas cercanas: Q, E, R, F, G
+    elif b == b'q': # Cola
+        state.p1.moving_tail = not state.p1.moving_tail
+    elif b == b'e': # Parpadeo
+        state.p1.blinking = not state.p1.blinking
+    elif b == b'r': # Reacción de Salto
+        state.p1.reaction_type, state.p1.reaction_timer = "jump", 0
+    elif b == b'f': # Saludar (Arm waving)
+        state.p1.arm_waving = not state.p1.arm_waving
+    elif b == b'g': # Patas arriba
+        state.p1.front_paws_up_active = not state.p1.front_paws_up_active
+        
+
+    # 3. CAMBIO DE ESCENARIO (Afecta a Timoteo y Lola simultáneamente)
+    elif b in [b'1', b'2', b'3', b'4', b'5', b'6', b'7']:
+        mapping = {
+            b'1': ("neutral", 1, None),
+            b'2': ("happy", 2, "jump"),
+            b'3': ("sad", 3, "shake"),
+            b'4': ("angry", 4, "spin"),
+            b'5': ("surprised", 5, "jump"),
+            b'6': ("fear", 6, "shake"),
+            b'7': ("interest", 7, "spin")
+        }
+        exp, scn, react = mapping[b]
+        state.scenario = scn
+        
+        # Aplicamos a AMBOS gatos
+        for p in [state.p1, state.p2]:
+            p.expression = exp
+            p.reaction_type = react
+            p.reaction_timer = 0
+            
+        gestor_audio.play_action_sound(exp)
+        gestor_audio.play_background_music(state.scenario)
+    elif b == b'o': # activar/desactivar audio
+        state.sonido_activo = not state.sonido_activo
+        if not state.sonido_activo:
+            pygame.mixer_music.pause() #sonido desactivado
+        else:
+            pygame.mixer_music.unpause() #sonido de vuelta 
+    # 4. CONTROLES DE CÁMARA Y SISTEMA (Globales)
+    elif b == b'0': state.show_instructions = not state.show_instructions
+    elif b == b'z': camera.zoom_in()
+    elif b == b'x': camera.zoom_out()
+    elif b == b'c': camera.reset_camera()
+    elif b == b'v': camera.view_top()
+    elif b == b'b': camera.view_side()
+    elif b == b'n': camera.view_front_close()
+    elif b == b'm': camera.view_rear()
+    elif key == b'\x1b': # ESC
         glutLeaveMainLoop()
 
+    glutPostRedisplay()
+
+def keyboard_up(key, x, y):
+    b = key 
+    # cuando se deja de presionar una tecla de movimiento, el gato deja de caminar
+    if b in [b'w', b'a', b's', b'd']:
+        state.p1.walking = False
+    glutPostRedisplay()
+
+def keyboard_special_up(key, x, y):
+    # si no se presiona no camina
+    if key in [GLUT_KEY_UP, GLUT_KEY_DOWN, GLUT_KEY_LEFT, GLUT_KEY_RIGHT]:
+        state.p2.walking = False
     glutPostRedisplay()

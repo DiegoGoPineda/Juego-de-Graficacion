@@ -1,67 +1,75 @@
 # actions/update.py
 from OpenGL.GLUT import *
 from Actions import state
+from Actions import gestor_audio
 import math
 
 
-def enforce_scene_bounds():
+def enforce_scene_bounds(player):
     x_min, x_max = state.scene_bounds["x"]
     z_min, z_max = state.scene_bounds["z"]
+    # Ahora usamos player.x y player.z (las variables de tu clase PlayerState)
+    player.x = max(x_min, min(x_max, player.x))
+    player.z = max(z_min, min(z_max, player.z))
 
-    # Limitar gato dentro de los límites de la escena
-    state.gato_x = max(x_min, min(x_max, state.gato_x))
-    state.gato_z = max(z_min, min(z_max, state.gato_z))
+def update_jugador_logica(player):
+    enforce_scene_bounds(player)
+    actualmente_colisionando = False
+    objeto_tocado = None
+    for obj in state.objetos_escenas:
+        if obj.check_collision(player.x, player.z, 1.5):
+            actualmente_colisionando = True
+            objeto_tocado = obj
+            break
+    if actualmente_colisionando and not player.hay_choque:
+        # Esto solo se ejecuta una vez cuando entras al objeto
+        player.expression = objeto_tocado.expresion
+        player.reaction_type = objeto_tocado.animacion
+        player.reaction_timer = 0
+        player.color_colision_actual = objeto_tocado.color
+        gestor_audio.play_action_sound(objeto_tocado.expresion)
+    
+    player.hay_choque = actualmente_colisionando
+    # Actualizamos timers y ángulos de este jugador
+    if player.blinking:
+        player.blink_timer += 0.1
 
+    if player.moving_tail:
+        player.tail_angle += 0.1
+    
+    if player.walking:
+        #movimento de las patas
+        player.animation_angle += 0.15
+        player.leg_swing = math.sin(player.animation_angle) * 30
+    else:
+        player.leg_swing = 0
+    
+    if player.reaction_type:
+        player.reaction_timer += 1
+        if player.reaction_timer >= player.reaction_duration:
+            player.reaction_type = None
+            player.reaction_timer = 0
+
+    # Animaciones extra (saludar, orejas, etc.)
+    t_blink = player.blink_timer
+    if player.arm_waving:
+        player.arm_wave_angle = math.sin(t_blink * 8) * 35 
+    else:
+        player.arm_wave_angle = 0
+
+    if player.ears_twitching:   
+        player.ears_twitch_angle = math.sin(t_blink * 15) * 20
+    else:
+        player.ears_twitch_angle = 0
+
+    player.front_paws_up_angle = 70 if player.front_paws_up_active else 0
 
 def update(value):
-    state.hay_choque = False
-    for obj in state.objetos_escenas:
-        if obj.check_collision(state.gato_x, state.gato_z):
-            state.hay_choque = True
-            break
-
-    if state.blinking:
-        state.blink_timer += 0.1
-
-    # Movimiento de cola constante si state.moving_tail es True
-    if state.moving_tail:
-        state.tail_angle += 0.1
+    # Actualizamos a Timoteo
+    update_jugador_logica(state.p1)
     
-    # Movimiento de patas constante si state.walking es True
-    if state.walking:
-        state.animation_angle += 0.15
-        state.leg_swing = math.sin(state.animation_angle) * 30
-    else:
-        state.leg_swing = 0 # Vuelve a posición neutral al apagar
-    
-    if state.reaction_type:
-        state.reaction_timer += 1
-        # Cuando el timer llega al límite, se detiene solo (Type = None)
-        if state.reaction_timer >= state.reaction_duration:
-            state.reaction_type = None
-            state.reaction_timer = 0
-
-    t = state.blink_timer
-    #Saludar : Movimiento lateral rápido
-    if state.arm_waving:
-        # Un balanceo lateral (sinusoidal)
-        state.arm_wave_angle = math.sin(t * 8) * 35 
-    else:
-        state.arm_wave_angle = 0
-
-    #  Movimiento rapido y corto de las orejas
-    if state.ears_twitching:
-        # Balanceo muy rápido 
-        state.ears_twitch_angle = math.sin(t * 15) * 20
-    else:
-        state.ears_twitch_angle = 0
-    # Patas hacia enfrente
-    if state.front_paws_up_active:
-        # Movimiento de subida controlado (escala de 0 a 1)
-        state.front_paws_up_angle = 70 # angulo fijo hacia arriba
-    else:
-        state.front_paws_up_angle = 0
+    # Actualizamos a Lola
+    update_jugador_logica(state.p2)
 
     glutPostRedisplay()
     glutTimerFunc(16, update, 0)
-

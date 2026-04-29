@@ -1,4 +1,3 @@
-# state.py
 # Actions/state.py
 from Actions.colisiones import CollisionObject
 
@@ -15,7 +14,6 @@ class PlayerState:
         self.blinking = True
         self.leg_swing = 0.0
         self.tail_angle = 0.0
-        self.animation_angle = 0.0
         self.blink_timer = 0.0
         # Variables específicas de Timoteo
         self.arm_waving = False
@@ -35,14 +33,13 @@ p2 = PlayerState(x_inicial=3.0, nombre="Lola")
 scenario = 1
 sonido_activo = True
 show_instructions = True
-scene_bounds = {"x": (-20.0, 20.0), 
-                "z": (-20.0, 20.0)}
+scene_bounds = {"x": (-20.0, 20.0),
+                 "z": (-20.0, 20.0)}
 
 # Objetos de colisión (Los que tenías en Timoteo)
-
 objetos_escenas = [
-    CollisionObject(5.0, 5.0, 1.5, (0.6, 0.3, 0.1), "Caja", "surprised", "jump", "surprised"),
-    CollisionObject(-5.0, -8.0, 1.0, (0.4, 0.4, 0.4), "Piedra", "angry", "shake", "angry"),
+    CollisionObject(5.0, 5.0, 1.5, (0.6, 0.3, 0.1), "Caja", "surprised", "jump"),
+     CollisionObject(-5.0, -8.0, 1.0, (0.4, 0.4, 0.4), "Piedra", "angry", "shake", "angry"),
     CollisionObject(0.0, -12.0, 1.2, (0.1, 0.4, 0.1), "Arbusto", "interest", "spin", "interest"),
     CollisionObject(10.0, -5.0, 2.0, (0.3, 0.3, 0.7), "Contenedor", "fear", "shake", "fear"),
     CollisionObject(-10.0, 10.0, 0.8, (0.8, 0.2, 0.2), "Poste", "happy", "jump", "happy")
