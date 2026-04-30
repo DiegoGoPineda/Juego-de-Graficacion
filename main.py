@@ -4,7 +4,7 @@ from OpenGL.GLUT import *
 import sys
 from resources import escenario
 from Actions import state, camera, update,gestor_audio
-from Characteres import gato,lola
+from Characteres import gato,lola,mosca
 from resources import input_handlers, grid
 
 show_instructions = True
@@ -87,10 +87,16 @@ def display():
     glTranslatef(state.p1.x, state.p1.y, state.p1.z)
     gato.draw_gato_full(state.p1) # Dibuja el gato completo jugador 1
     glPopMatrix()
+    """
     #dibuja a a lola
     glPushMatrix()
     glTranslatef(state.p2.x, state.p2.y, state.p2.z)
     lola.draw_gato_full(state.p2) # Dibuja la lola completa jugador 2
+    """
+    #dibujar la mosca
+    glPushMatrix()
+    glTranslatef(state.p2.x, state.p2.y, state.p2.z)
+    mosca.draw_mosca_full(state.p2) # Dibuja la mosca completa jugador 2
     glPopMatrix()
     if state.show_instructions:
         show_menu()

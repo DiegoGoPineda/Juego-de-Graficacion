@@ -30,6 +30,8 @@ def update_jugador_logica(player):
         gestor_audio.play_action_sound(objeto_tocado.expresion)
     
     player.hay_choque = actualmente_colisionando
+    # para el zorro y su movimiento 
+    player.animation_angle += 0.15
     # Actualizamos timers y ángulos de este jugador
     if player.blinking:
         player.blink_timer += 0.1
