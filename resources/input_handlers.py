@@ -99,6 +99,29 @@ def keyboard(key, x, y):
 def keyboard(key, x, y):
     b = key 
     paso = 0.5
+    # logica para los papusjugadores
+    if state.en_menu_seleccion:
+        if b == b'a' or b == b'd': # Navegar
+            state.indice_menu = (state.indice_menu + (1 if b == b'd' else -1)) % len(state.personajes_pool)
+            gestor_audio.play_action_sound("interest")
+        
+        elif b == b'\r': # ENTER (Confirmar selección)
+            if state.fase_seleccion == 1:
+                state.p1_tipo_elegido = state.personajes_pool[state.indice_menu].tipo
+                state.fase_seleccion = 2
+                gestor_audio.play_action_sound("happy")
+            elif state.fase_seleccion == 2:
+                state.p2_tipo_elegido = state.personajes_pool[state.indice_menu].tipo
+                state.fase_seleccion = 3
+                state.en_menu_seleccion = False # Salir al juego
+                # Asignamos los tipos finales a los objetos p1 y p2 del juego
+                state.p1.tipo = state.p1_tipo_elegido
+                state.p2.tipo = state.p2_tipo_elegido
+                gestor_audio.play_action_sound("happy")
+        
+        elif key == b'\x1b': glutLeaveMainLoop()
+        glutPostRedisplay()
+        return # Detener aquí si estamos en menú
     # 1. movimientos timoteo
     if b == b'w': 
         state.p1.z -= paso

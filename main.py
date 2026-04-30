@@ -64,17 +64,10 @@ def show_menu():
     glEnable(GL_DEPTH_TEST)
     
 #Renderizado 
+"""
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
-    """   
-    # Cámara Fija
-    gluLookAt(
-        0,1.5,6, #Posicion de la camara
-        0,0,0,  # Punto al que mira
-        0,1,0  # Vector altura al que se coloca
-    )
-    """
     # aplicar camra 
     camera.apply_camera()
     #ver gril
@@ -86,13 +79,11 @@ def display():
     glPushMatrix()
     glTranslatef(state.p1.x, state.p1.y, state.p1.z)
     gato.draw_gato_full(state.p1) # Dibuja el gato completo jugador 1
-    glPopMatrix()
-    """
+    glPopMatrix()   
     #dibuja a a lola
     glPushMatrix()
     glTranslatef(state.p2.x, state.p2.y, state.p2.z)
-    lola.draw_gato_full(state.p2) # Dibuja la lola completa jugador 2
-    """
+    lola.draw_gato_full(state.p2) # Dibuja la lola completa jugador 2  
     #dibujar la mosca
     glPushMatrix()
     glTranslatef(state.p2.x, state.p2.y, state.p2.z)
@@ -102,7 +93,104 @@ def display():
         show_menu()
         
     glutSwapBuffers()
+"""
+def draw_multijugador_menu():
+    glClearColor(0.05, 0.05, 0.1, 1.0)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+    
+    # --- DIBUJAR TÍTULO EN 2D ---
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    gluOrtho2D(0, 800, 0, 600)
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+    
+    glDisable(GL_LIGHTING)
+    glColor3f(1.0, 1.0, 1.0) # Texto blanco para que resalte
+    titulo = "JUGADOR 1: ELIGE TU PERSONAJE" if state.fase_seleccion == 1 else "JUGADOR 2: ELIGE TU PERSONAJE"
+    # Centrar el texto un poco (x=250, y=550)
+    glRasterPos2f(250, 550)
+    for char in titulo:
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
+    glEnable(GL_LIGHTING)
+    
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    # ----------------------------
 
+    # Volver a cámara 3D para los personajes
+    gluLookAt(0, 0, 15, 0, 0, 0, 0, 1, 0)
+
+    for i, p in enumerate(state.personajes_pool):
+        glPushMatrix()
+        # Ajustamos el espaciado para que quepan los 3 (Lola, Timoteo, Mosca)
+        x_pos = (i - 1) * 7.0 
+        glTranslatef(x_pos, -2.0, 0)
+        
+        glRotatef(glutGet(GLUT_ELAPSED_TIME) * 0.08, 0, 1, 0)
+
+        if i == state.indice_menu:
+            glScalef(1.4, 1.4, 1.4)
+            tag = "P1" if state.fase_seleccion == 1 else "P2"
+            # Dibujar etiqueta sobre el personaje
+            draw_text(-0.5, 4, tag)
+        else:
+            glScalef(0.8, 0.8, 0.8)
+            glColor3f(0.3, 0.3, 0.3)
+
+        # Dibujar el personaje según su tipo
+        if p.tipo == "gato": 
+            gato.draw_gato_full(p)
+        elif p.tipo == "lola": 
+            lola.draw_gato_full(p)
+        elif p.tipo == "mosca": 
+            mosca.draw_mosca_full(p)
+        
+        glPopMatrix()
+# nuevo display para el menú multijugador
+def display():
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+    
+    if state.en_menu_seleccion:
+        draw_multijugador_menu()
+    else:
+        camera.apply_camera()
+        grid.draw_grid(size=30, step=1)
+        grid.draw_axes()
+        escenario.draw_scenery(state.scenario)
+
+        # JUGADOR 1
+        glPushMatrix()
+        glTranslatef(state.p1.x, state.p1.y, state.p1.z)
+        if state.p1.tipo == "gato": 
+            gato.draw_gato_full(state.p1)
+        elif state.p1.tipo == "mosca": 
+            mosca.draw_mosca_full(state.p1)
+        elif state.p1.tipo == "lola": 
+            lola.draw_gato_full(state.p1)
+        glPopMatrix()
+
+        # JUGADOR 2
+        glPushMatrix()
+        glTranslatef(state.p2.x, state.p2.y, state.p2.z)
+        if state.p2.tipo == "gato": 
+            gato.draw_gato_full(state.p2)
+        elif state.p2.tipo == "mosca": 
+            mosca.draw_mosca_full(state.p2)
+        elif state.p2.tipo == "lola":  
+            lola.draw_gato_full(state.p2)
+        glPopMatrix()
+
+        if state.show_instructions:
+            show_menu()
+        
+    glutSwapBuffers()
 def reshape(w, h):
     if h==0:
         h=1
@@ -137,3 +225,4 @@ def main():
    
 if __name__ == "__main__":
     main()
+

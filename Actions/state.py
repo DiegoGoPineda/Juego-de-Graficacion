@@ -37,9 +37,21 @@ class PlayerState:
 # --- INSTANCIAS ---
 # Ahora puedes definir los 6 personajes aquí, pero solo activamos 2
 p1 = PlayerState(x_inicial=-3.0, nombre="Timoteo", tipo="gato")
-#p2 = PlayerState(x_inicial=3.0, nombre="Lola", tipo="gato")
-p2 = PlayerState(x_inicial=3.0, nombre="mosca", tipo="mosca")
-# p3 = PlayerState(x_inicial=0.0, nombre="Fox", tipo="fox") # Este sería el tercero
+p2 = PlayerState(x_inicial=3.0, nombre="Lola", tipo="lola")
+p3 = PlayerState(x_inicial=3.0, nombre="Mosca", tipo="mosca")
+
+
+# --- LÓGICA DE SELECCIÓN MULTIJUGADOR ---
+en_menu_seleccion = True
+fase_seleccion = 1  # 1: Jugador 1 eligiendo, 2: Jugador 2 eligiendo, 3: Listos
+indice_menu = 1     # Personaje resaltado en el menú (0 a 2 para Timoteo, Lola, Mosca)
+
+# Variables para guardar qué personaje eligió cada quien
+p1_tipo_elegido = None
+p2_tipo_elegido = None
+
+# Tus personajes del pool (asegúrate de que tengan el atributo .tipo)
+personajes_pool = [p1, p2, p3]
 
 # --- MUNDO ---
 scenario = 1
