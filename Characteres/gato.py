@@ -2,21 +2,22 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import math
-from Actions import state 
+from Actions import state
 from Utils.dibujar_cubo import draw_cube
+from Actions.luz import set_color
 def get_collision_color(p):
     return getattr(p, 'color_colision_actual', (1.0, 0.0, 0.0))
 
 def draw_body(p):
     glPushMatrix()
     if p.hay_choque:
-        glColor3f(*get_collision_color(p))
+        set_color(*get_collision_color(p))
     else:
-        glColor3f(0.1, 0.1, 0.1)
+        set_color(0.1, 0.1, 0.1)
     
     draw_cube(0, 0, 1, 3, 1, 2)
     if not p.hay_choque:
-        glColor3f(1.0, 1.0, 1.0)
+        set_color(1.0, 1.0, 1.0)
         draw_cube(1.5, -0.01, 1.1, 3.01, 1.01, 1.9)
     glPopMatrix()
 
@@ -25,12 +26,13 @@ def draw_head(p):
 
     # Color base
     if p.hay_choque:
-        glColor3f(*get_collision_color(p))
+        
+        set_color(*get_collision_color(p))
     else:
-        glColor3f(0.1, 0.1, 0.1)
+        set_color(0.1, 0.1, 0.1)
     draw_cube(3, 0, 1.5, 4, 1, 2.5)
     if not p.hay_choque:
-        glColor3f(1.0, 1.0, 1.0)
+        set_color(1.0, 1.0, 1.0)
         draw_cube(3.8, 0.2, 1.7, 4.01, 0.8, 2.3)
 
     # boca en el centro
@@ -76,7 +78,7 @@ def draw_head(p):
     z_min = z_center - width / 2
     z_max = z_center + width / 2
 
-    glColor3f(*m_color)
+    set_color(*m_color)
     draw_cube(4, y_min, z_min, x_ext, y_max, z_max)
 
     glPopMatrix()
@@ -92,19 +94,19 @@ def draw_eyes(p):
 
         #  COLOR
         if p.expression == "angry":
-            glColor3f(1.0, 0.0, 0.0)
+            set_color(1.0, 0.0, 0.0)
         elif p.expression == "happy":
-            glColor3f(1.0, 0.5, 0.8)
+            set_color(1.0, 0.5, 0.8)
         elif p.expression == "sad":
-            glColor3f(0.2, 0.2, 1.0)
+            set_color(0.2, 0.2, 1.0)
         elif p.expression == "surprised":
-            glColor3f(1.0, 1.0, 1.0)
+            set_color(1.0, 1.0, 1.0)
         elif p.expression == "fear":
-            glColor3f(1.0, 1.0, 0.0)
+            set_color(1.0, 1.0, 0.0)
         elif p.expression == "interest":
-            glColor3f(0.0, 1.0, 1.0)
+            set_color(0.0, 1.0, 1.0)
         else:
-            glColor3f(0.0, 0.8, 0.4)
+            set_color(0.0, 0.8, 0.4)
         height = 0.2
         width = 0.2
         # reacciones
@@ -134,9 +136,9 @@ def draw_eyes(p):
 def draw_ears(p):
     glPushMatrix()
     if p.hay_choque:
-        glColor3f(*get_collision_color(p))
+        set_color(*get_collision_color(p))
     else:
-        glColor3f(0.1, 0.1, 0.1)
+        set_color(0.1, 0.1, 0.1)
     #oreja izquierda
     glTranslate(3.25, 0.2, 2.5)
     glRotate(p.ears_twitch_angle, 1, 0, 0)
@@ -156,7 +158,7 @@ def draw_ears(p):
 # patas
 def draw_legs(p):
     # Patas traseras (quietas o caminado normal)
-    glColor3f(1.0, 1.0, 1.0)
+    set_color(1.0, 1.0, 1.0)
     # Trasera Izq
     glPushMatrix()
     glTranslate(0.25, 0.25, 0.5)
@@ -202,13 +204,13 @@ def draw_tail(p):
     glRotate(angle, 0, 1, 0)
     glTranslate(0, -0.5, -1.8)
     if p.hay_choque:
-        glColor3f(*get_collision_color(p))
+        set_color(*get_collision_color(p))
     else:
-        glColor3f(0.1, 0.1, 0.1)
+        set_color(0.1, 0.1, 0.1)
 
     draw_cube(-1.5, 0.37, 1.75, 0, 0.62, 2)
 
-    glColor3f(1.0, 1.0, 1.0)
+    set_color(1.0, 1.0, 1.0)
     draw_cube(-2.5, 0.37, 1.75, -1.5, 0.62, 2)
 
     glPopMatrix()
@@ -217,21 +219,17 @@ def draw_tail(p):
 def draw_collar(p):
     glPushMatrix()
     if p.hay_choque:
-        glColor3f(1.0, 1.0, 0.0)
+        set_color(1.0, 1.0, 0.0)
     else:
-        glColor3f(0.8, 0.0, 0.0)
+        set_color(0.8, 0.0, 0.0)
     draw_cube(2.9, -0.05, 1.45, 3.1, 1.05, 2.55)
-    glColor3f(1.0, 0.84, 0.0)
+    set_color(1.0, 0.84, 0.0)
     draw_cube(3.05, 0.4, 1.85, 3.15, 0.6, 2.15)
     glPopMatrix()
 
 def draw_gato_full(p):
     glPushMatrix()
-    # iluminacion de phong
-    brillo_blanco =[1.0, 1.0, 1.0, 1.0]
-    brillo_objeto=[50.0]
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, brillo_blanco) # luz blanca 
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, brillo_objeto) # brillo del objeto
+ 
     if p.reaction_type == "jump":
         y_offset = math.sin(math.pi * p.reaction_timer / p.reaction_duration) * 1.5
         glTranslatef(0, y_offset, 0)

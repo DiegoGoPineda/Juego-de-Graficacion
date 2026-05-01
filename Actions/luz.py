@@ -1,0 +1,63 @@
+# lighting.py
+from OpenGL.GL import *
+from Actions import state
+
+# Variables globales para la luz
+light_pos = [5.0, 10.0, 5.0, 1.0]
+
+def setup_lighting():
+    global light_pos
+    light_ambient = [0.2, 0.2, 0.2, 1.0]
+    light_diffuse = [0.8, 0.8, 0.8, 1.0]
+    light_specular = [1.0, 1.0, 1.0, 1.0]
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
+
+    # Configuración de Material para simular brillo (Phong-like)
+    glMaterialfv(GL_FRONT, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+    glMaterialf(GL_FRONT, GL_SHININESS, 60.0) 
+
+def apply_light_position():
+    """Llama a esto cada frame después de aplicar la cámara para que la luz sea global"""
+    global light_pos
+    glLightfv(GL_LIGHT0, GL_POSITION, light_pos)
+
+def get_shadow_matrix():
+    """Calcula la matriz de proyección plana para la sombra sobre Y=0"""
+    global light_pos
+    Lx, Ly, Lz, Lw = light_pos
+    
+    # Plano Y=0: A=0, B=1, C=0, D=0
+    A, B, C, D = 0.0, 1.0, 0.0, 0.0
+    dot = A*Lx + B*Ly + C*Lz + D*Lw
+    
+    mat = [
+        dot - Lx*A, -Ly*A,      -Lz*A,      -Lw*A,
+        -Lx*B,      dot - Ly*B, -Lz*B,      -Lw*B,
+        -Lx*C,      -Ly*C,      dot - Lz*C, -Lw*C,
+        -Lx*D,      -Ly*D,      -Lz*D,      dot - Lw*D
+    ]
+    return mat
+
+def set_color(r, g, b, a=1.0):
+    """Asigna el color o el color de la sombra si estamos en el shadow_pass"""
+    if state.is_shadow_pass:
+        glColor4f(0.05, 0.05, 0.05, 0.6) # Color de la sombra
+    else:
+        glColor4f(r, g, b, a)
+
+def apply_shading():
+    # GL_FLAT = Sombreado Plano, GL_SMOOTH = Sombreado Gouraud
+    if state.shading_mode == "Flat":
+        glShadeModel(GL_FLAT)
+    else:
+        glShadeModel(GL_SMOOTH)
+
+def toggle_shading():
+    if state.shading_mode == "Gouraud":
+        state.shading_mode = "Flat"
+    else:
+        state.shading_mode = "Gouraud"
+    #print(f"Modelo de sombreado: {state.shading_mode}")

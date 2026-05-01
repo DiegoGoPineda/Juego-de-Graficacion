@@ -3,8 +3,8 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import sys
 from resources import escenario
-from Actions import state, camera, update, gestor_audio
-from Characteres import gato, lola, mosca
+from Actions import state, camera, update, gestor_audio, luz
+from Characteres import gato, lola, mosca, KingLi
 from resources import input_handlers, grid
 
 def init():
@@ -13,12 +13,11 @@ def init():
     glEnable(GL_LIGHT0)      
     glEnable(GL_COLOR_MATERIAL)
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     
-    glLightfv(GL_LIGHT0, GL_POSITION, [2.0, 5.0, 5.0, 1.0])
-    glLightfv(GL_LIGHT0, GL_AMBIENT, [0.2, 0.2, 0.2, 1.0])
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, [0.8, 0.8, 0.8, 1.0])
-    glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
-    glClearColor(0.05, 0.05, 0.1, 1.0) # Fondo oscuro para el inicio
+    luz.setup_lighting() # Configuramos los componentes de la luz una vez
+    glClearColor(0.05, 0.05, 0.1, 1.0)
 
 def draw_text(x, y, text, font=GLUT_BITMAP_8_BY_13, color=(0,0,0)):
     glDisable(GL_LIGHTING)
@@ -28,9 +27,28 @@ def draw_text(x, y, text, font=GLUT_BITMAP_8_BY_13, color=(0,0,0)):
         glutBitmapCharacter(font, ord(char))
     glEnable(GL_LIGHTING)
 
+def draw_players():
+    # Dibujamos a los jugadores según su tipo (Gato, Lola, Mosca o KingLi)
+    # Jugador 1
+    glPushMatrix()
+    glTranslatef(state.p1.x, state.p1.y, state.p1.z)
+    if state.p1.tipo == "gato": gato.draw_gato_full(state.p1)
+    elif state.p1.tipo == "mosca": mosca.draw_mosca_full(state.p1)
+    elif state.p1.tipo == "lola": lola.draw_gato_full(state.p1)
+    elif state.p1.tipo == "KingLi": KingLi.draw_kingli_full(state.p1)
+    glPopMatrix()
+
+    # Jugador 2
+    glPushMatrix()
+    glTranslatef(state.p2.x, state.p2.y, state.p2.z)
+    if state.p2.tipo == "gato": gato.draw_gato_full(state.p2)
+    elif state.p2.tipo == "mosca": mosca.draw_mosca_full(state.p2)
+    elif state.p2.tipo == "lola": lola.draw_gato_full(state.p2)
+    elif state.p2.tipo == "KingLi": KingLi.draw_kingli_full(state.p2)
+    glPopMatrix()
+
 def draw_main_menu():
-    """Dibuja los botones de Jugar y Salir"""
-    glClearColor(0.05, 0.05, 0.1, 1.0)
+    # boton para jugar y salir
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
     glMatrixMode(GL_PROJECTION)
@@ -87,7 +105,6 @@ def show_game_instructions():
 
 def draw_multijugador_menu():
     # escoger personajes
-    glClearColor(0.05, 0.05, 0.1, 1.0)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
     # Título de selección
@@ -106,13 +123,13 @@ def draw_multijugador_menu():
     glMatrixMode(GL_MODELVIEW)
 
     gluLookAt(0, 0, 18, 0, 0, 0, 0, 1, 0)
+    luz.apply_light_position()
 
     for i, p in enumerate(state.personajes_pool):
         glPushMatrix()
         # Distribución de los 6 personajes en el menú
         x_pos = (i - 2.5) * 5.5 
         glTranslatef(x_pos, -2.0, 0)
-        
         glRotatef(glutGet(GLUT_ELAPSED_TIME) * 0.08, 0, 1, 0)
 
         if i == state.indice_menu:
@@ -126,6 +143,7 @@ def draw_multijugador_menu():
         if p.tipo == "gato": gato.draw_gato_full(p)
         elif p.tipo == "lola": lola.draw_gato_full(p)
         elif p.tipo == "mosca": mosca.draw_mosca_full(p)
+        elif p.tipo == "KingLi": KingLi.draw_kingli_full(p)
         glPopMatrix()
 
 def display():
@@ -141,26 +159,26 @@ def display():
     
     elif state.estado_actual == state.EN_JUEGO:
         camera.apply_camera()
+        # aplicamos la luz antes de dibujar el escenario y los personajes
+        luz.apply_light_position()
+        luz.apply_shading()
+        # escenario
         grid.draw_grid(size=30, step=1)
         grid.draw_axes()
         escenario.draw_scenery(state.scenario)
-
-        # jugaodr alguno (Gato, Lola o Mosca)
+        # sombras 
+        state.is_shadow_pass = True
+        glDisable(GL_LIGHTING)
         glPushMatrix()
-        glTranslatef(state.p1.x, state.p1.y, state.p1.z)
-        if state.p1.tipo == "gato": gato.draw_gato_full(state.p1)
-        elif state.p1.tipo == "mosca": mosca.draw_mosca_full(state.p1)
-        elif state.p1.tipo == "lola": lola.draw_gato_full(state.p1)
+        # aplasta el modelo
+        shadow_mat = luz.get_shadow_matrix()
+        glMultMatrixf(shadow_mat)
+        draw_players() 
         glPopMatrix()
-
-        # jugador dos lo mismo
-        glPushMatrix()
-        glTranslatef(state.p2.x, state.p2.y, state.p2.z)
-        if state.p2.tipo == "gato": gato.draw_gato_full(state.p2)
-        elif state.p2.tipo == "mosca": mosca.draw_mosca_full(state.p2)
-        elif state.p2.tipo == "lola": lola.draw_gato_full(state.p2)
-        glPopMatrix()
-
+        glEnable(GL_LIGHTING)
+        state.is_shadow_pass = False
+        # personajes con iluminacion
+        draw_players()
         if state.show_instructions:
             show_game_instructions()
         
@@ -180,8 +198,7 @@ def main():
     glutInitWindowSize(900, 700)
     gestor_audio.play_background_music(1)
     glutCreateWindow(b"Timoteo 3D - Menu System")
-    init()
-    
+    init()   
     glutDisplayFunc(display)
     glutReshapeFunc(reshape) 
     glutKeyboardFunc(input_handlers.keyboard)     

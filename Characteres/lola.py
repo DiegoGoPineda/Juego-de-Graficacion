@@ -4,6 +4,7 @@ from OpenGL.GLUT import *
 import math
 from Actions import state 
 from Utils.dibujar_cubo import draw_cube
+from Actions.luz import set_color
 
 def get_collision_color(p):
     
@@ -12,9 +13,9 @@ def get_collision_color(p):
 def draw_body(p):
     glPushMatrix()
     if p.hay_choque:
-        glColor3f(*get_collision_color(p))
+        set_color(*get_collision_color(p))
     else:
-        glColor3f(0.95, 0.9, 0.8)
+        set_color(0.95, 0.9, 0.8)
     # Color Crema para el cuerpo
     draw_cube(0, 0, 1, 3, 1, 2)
     glPopMatrix()
@@ -22,17 +23,17 @@ def draw_body(p):
 def draw_head(p):
     glPushMatrix()
     if p.hay_choque:
-        glColor3f(*get_collision_color(p))
+        set_color(*get_collision_color(p))
     else:
-        glColor3f(0.95, 0.9, 0.8)
+        set_color(0.95, 0.9, 0.8)
     # Cabeza base (Seal Point)
     draw_cube(3, 0, 1.5, 4, 1, 2.5)   
 
     # Color base oscuro
     if p.expression == "angry":
-        glColor3f(0.6, 0.0, 0.0) # Rojo si está enojado
+        set_color(0.6, 0.0, 0.0) # Rojo si está enojado
     else:
-        glColor3f(0.2, 0.15, 0.1)
+        set_color(0.2, 0.15, 0.1)
   
     y_min, y_max = 0.35, 0.65
     z_min, z_max = 1.6, 2.1 # Basado en el original (1.5 a 2) pero centrado
@@ -44,7 +45,7 @@ def draw_head(p):
         # Desplazamos el bloque hacia abajo
         z_min -= 0.1; z_max -= 0.1
     elif p.expression == "surprised":
-        # Se vuelve un cubo más pequeño (boca abierta)
+        # Se vuelve un cubo mas pequeño (boca abierta)
         y_min, y_max = 0.45, 0.55
         z_min, z_max = 1.7, 1.9
     elif p.expression == "fear":
@@ -68,13 +69,13 @@ def draw_eyes(p):
         
         # Colores dinámicos según expresión
         if p.expression == "angry": 
-            glColor3f(1.0, 0.0, 0.0)
+            set_color(1.0, 0.0, 0.0)
         elif p.expression == "surprised": 
-            glColor3f(1.0, 1.0, 1.0)
+            set_color(1.0, 1.0, 1.0)
         elif p.expression == "fear": 
-            glColor3f(1.0, 1.0, 0.0) # Amarillo
+            set_color(1.0, 1.0, 0.0) # Amarillo
         else: 
-            glColor3f(0.0, 0.6, 1.0) # Azul original
+            set_color(0.0, 0.6, 1.0) # Azul original
 
         # Formas de los ojos
         if p.expression == "wink" and dy == 0.1:
@@ -94,7 +95,7 @@ def draw_eyes(p):
         glPopMatrix()
 def draw_ears(p):
     glPushMatrix()
-    glColor3f(0.2, 0.15, 0.1)
+    set_color(0.2, 0.15, 0.1)
     
     # Movimiento de orejas según expresión
     z_off = 0
@@ -107,9 +108,9 @@ def draw_ears(p):
 
 def draw_legs(p):
     glPushMatrix()
-    glColor3f(0.25, 0.2, 0.15) 
+    set_color(0.25, 0.2, 0.15) 
     
-    # --- PATAS LADO IZQUIERDO ---
+    # patas izquierda
     glPushMatrix()
     glTranslate(0, 0, 0.5) 
     glRotate(p.leg_swing, 0, 1, 0) 
@@ -118,7 +119,7 @@ def draw_legs(p):
     draw_cube(2.5, 0, 0, 3, 0.5, 1)   # Pata 3
     glPopMatrix()
 
-    # --- PATAS LADO DERECHO ---
+    # patas derecha
     glPushMatrix()
     glTranslate(0, 1.0, 0.5) 
     glRotate(-p.leg_swing, 0, 1, 0)
@@ -131,7 +132,7 @@ def draw_legs(p):
 
 def draw_tail(p):
     glPushMatrix()
-    glColor3f(0.2, 0.15, 0.1)
+    set_color(0.2, 0.15, 0.1)
     angle = math.sin(p.tail_angle) * 15 # Aumentamos un poco el rango
     
     # Pivote en la base de la cola
@@ -144,13 +145,8 @@ def draw_tail(p):
 
 def draw_gato_full(p):
     glPushMatrix()
-    brillo_blanco = [1.0, 1.0, 1.0, 1.0]
-    brillo_objeto = [30.0] # Un poco menos brillante que Timoteo
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, brillo_blanco)
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, brillo_objeto)
-
     
-    # --- SISTEMA DE REACCIONES ---
+    # reaciones
     if p.reaction_type == "jump":
         # Salto parabólico usando el timer de reacción
         z_offset = math.sin(math.pi * p.reaction_timer / p.reaction_duration) * 1.5
