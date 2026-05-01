@@ -34,26 +34,41 @@ class PlayerState:
         self.hay_choque = False
         self.color_colision_actual = (1.0, 1.0, 1.0)
 
-# --- INSTANCIAS ---
+# personajazos
 # Ahora puedes definir los 6 personajes aquí, pero solo activamos 2
 p1 = PlayerState(x_inicial=-3.0, nombre="Timoteo", tipo="gato")
 p2 = PlayerState(x_inicial=3.0, nombre="Lola", tipo="lola")
 p3 = PlayerState(x_inicial=3.0, nombre="Mosca", tipo="mosca")
 
 
-# --- LÓGICA DE SELECCIÓN MULTIJUGADOR ---
-en_menu_seleccion = True
-fase_seleccion = 1  # 1: Jugador 1 eligiendo, 2: Jugador 2 eligiendo, 3: Listos
-indice_menu = 1     # Personaje resaltado en el menú (0 a 2 para Timoteo, Lola, Mosca)
+# --- CONSTANTES DE FLUJO ---
+MENU_PRINCIPAL = 0
+MENU_SELECCION = 1
+EN_JUEGO = 2
 
-# Variables para guardar qué personaje eligió cada quien
-p1_tipo_elegido = None
-p2_tipo_elegido = None
+# --- ESTADO GLOBAL ---
+estado_actual = MENU_PRINCIPAL # El juego ahora inicia en el Menú de botones
+indice_boton = 0               # 0: Jugar, 1: Salir
+en_menu_seleccion = False      # Se activará cuando elijas "Jugar"
 
-# Tus personajes del pool (asegúrate de que tengan el atributo .tipo)
-personajes_pool = [p1, p2, p3]
+# instancia de los 2 jugapapus
+p1 = PlayerState(x_inicial=-3.0, nombre="P1", tipo="gato")
+p2 = PlayerState(x_inicial=3.0, nombre="P2", tipo="lola")
 
-# --- MUNDO ---
+# --- POOL DE PERSONAJES (Los 6 disponibles para elegir) ---
+personajes_pool = [
+    PlayerState(nombre="Timoteo", tipo="gato"),
+    PlayerState(nombre="Lola", tipo="lola"),
+    PlayerState(nombre="Mosca", tipo="mosca"),
+    PlayerState(nombre="Gato 2", tipo="gato"), # aqui vienen los demas
+    PlayerState(nombre="Lola 2", tipo="lola"),
+    PlayerState(nombre="Mosca 2", tipo="mosca")
+]
+
+# --- LÓGICA DE SELECCIÓN ---
+fase_seleccion = 1  # 1: P1 eligiendo, 2: P2 eligiendo
+indice_menu = 0    # Índice del personaje actualmente resaltado en el menú
+# mundo papu
 scenario = 1
 sonido_activo = True
 show_instructions = True

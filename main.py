@@ -3,11 +3,10 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import sys
 from resources import escenario
-from Actions import state, camera, update,gestor_audio
-from Characteres import gato,lola,mosca
+from Actions import state, camera, update, gestor_audio
+from Characteres import gato, lola, mosca
 from resources import input_handlers, grid
 
-show_instructions = True
 def init():
     glEnable(GL_DEPTH_TEST) 
     glEnable(GL_LIGHTING) 
@@ -19,19 +18,48 @@ def init():
     glLightfv(GL_LIGHT0, GL_AMBIENT, [0.2, 0.2, 0.2, 1.0])
     glLightfv(GL_LIGHT0, GL_DIFFUSE, [0.8, 0.8, 0.8, 1.0])
     glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
-    glClearColor(0.9, 0.9, 0.9, 1.0)
+    glClearColor(0.05, 0.05, 0.1, 1.0) # Fondo oscuro para el inicio
 
-def draw_text(x, y, text):
+def draw_text(x, y, text, font=GLUT_BITMAP_8_BY_13, color=(0,0,0)):
     glDisable(GL_LIGHTING)
-    glColor3f(0.0, 0.0, 0.0) # Negro
+    glColor3f(*color)
     glRasterPos2f(x, y)
-    # Uso de fuente
     for char in text:
-        glutBitmapCharacter(GLUT_BITMAP_8_BY_13, ord(char))
+        glutBitmapCharacter(font, ord(char))
     glEnable(GL_LIGHTING)
 
-def show_menu():
-    glDisable(GL_DEPTH_TEST) 
+def draw_main_menu():
+    """Dibuja los botones de Jugar y Salir"""
+    glClearColor(0.05, 0.05, 0.1, 1.0)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    gluOrtho2D(0, 800, 0, 600)
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    # Título Principal
+    draw_text(260, 500, "ConeceTec el peak", GLUT_BITMAP_HELVETICA_18, (1, 0.8, 0))
+
+    # Botones
+    opciones = ["JUGAR", "SALIR"]
+    for i, texto in enumerate(opciones):
+        y_pos = 300 - (i * 80)
+        # Resaltado si el índice coincide
+        color = (0, 1, 0.2) if i == state.indice_boton else (0.6, 0.6, 0.6)
+        txt = f"> {texto} <" if i == state.indice_boton else texto
+        draw_text(350, y_pos, txt, GLUT_BITMAP_HELVETICA_18, color)
+
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+
+def show_game_instructions():
+    #intrucciones
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
     glLoadIdentity()
@@ -41,161 +69,105 @@ def show_menu():
     glLoadIdentity()
 
     instructions = [
-        "--- CONTROLES MULTIJUGADOR ---",
-        "TIMOTEO (P1): WASD para mover",
-        "   Acciones: Q (Cola), E (Ojos), R (Salto), F (Saludar)",
-        "LOLA (P2): FLECHAS para mover",
-        "   Acciones: Automaticas por colision",
-        "-------------------------------",
-        "1-7: Cambiar Escenario (Ambos)",
-        "0: Mostrar/Ocultar Menu",
-        "O: Activar/Desactivar audio",
-        "Z-M: Controles de Camara",
-        "ESC: Salir"
+        "Controles:",
+        "P1: WASD | P2: FLECHAS",
+        "ESC: Menu Principal",
+        "1-7: Escenarios",
+        "0: Ocultar ayuda"
     ]
     y_pos = 570
     for line in instructions:
-        draw_text(20, y_pos, line)
+        draw_text(20, y_pos, line, color=(1,1,1))
         y_pos -= 20
+
     glPopMatrix()
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
-    glEnable(GL_DEPTH_TEST)
-    
-#Renderizado 
-"""
-def display():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
-    # aplicar camra 
-    camera.apply_camera()
-    #ver gril
-    grid.draw_grid(size=30, step=1)
-    grid.draw_axes()
-    #dibujar escenario 
-    escenario.draw_scenery(state.scenario)
-    #Dibujar gato
-    glPushMatrix()
-    glTranslatef(state.p1.x, state.p1.y, state.p1.z)
-    gato.draw_gato_full(state.p1) # Dibuja el gato completo jugador 1
-    glPopMatrix()   
-    #dibuja a a lola
-    glPushMatrix()
-    glTranslatef(state.p2.x, state.p2.y, state.p2.z)
-    lola.draw_gato_full(state.p2) # Dibuja la lola completa jugador 2  
-    #dibujar la mosca
-    glPushMatrix()
-    glTranslatef(state.p2.x, state.p2.y, state.p2.z)
-    mosca.draw_mosca_full(state.p2) # Dibuja la mosca completa jugador 2
-    glPopMatrix()
-    if state.show_instructions:
-        show_menu()
-        
-    glutSwapBuffers()
-"""
+
 def draw_multijugador_menu():
+    # escoger personajes
     glClearColor(0.05, 0.05, 0.1, 1.0)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
     
-    # --- DIBUJAR TÍTULO EN 2D ---
+    # Título de selección
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
     glLoadIdentity()
     gluOrtho2D(0, 800, 0, 600)
     glMatrixMode(GL_MODELVIEW)
-    glPushMatrix()
     glLoadIdentity()
     
-    glDisable(GL_LIGHTING)
-    glColor3f(1.0, 1.0, 1.0) # Texto blanco para que resalte
-    titulo = "JUGADOR 1: ELIGE TU PERSONAJE" if state.fase_seleccion == 1 else "JUGADOR 2: ELIGE TU PERSONAJE"
-    # Centrar el texto un poco (x=250, y=550)
-    glRasterPos2f(250, 550)
-    for char in titulo:
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
-    glEnable(GL_LIGHTING)
+    msg = f"JUGADOR {state.fase_seleccion}: ELIGE TU PERSONAJE"
+    draw_text(220, 550, msg, GLUT_BITMAP_HELVETICA_18, (1,1,1))
     
-    glPopMatrix()
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
-    # ----------------------------
 
-    # Volver a cámara 3D para los personajes
-    gluLookAt(0, 0, 15, 0, 0, 0, 0, 1, 0)
+    gluLookAt(0, 0, 18, 0, 0, 0, 0, 1, 0)
 
     for i, p in enumerate(state.personajes_pool):
         glPushMatrix()
-        # Ajustamos el espaciado para que quepan los 3 (Lola, Timoteo, Mosca)
-        x_pos = (i - 1) * 7.0 
+        # Distribución de los 6 personajes en el menú
+        x_pos = (i - 2.5) * 5.5 
         glTranslatef(x_pos, -2.0, 0)
         
         glRotatef(glutGet(GLUT_ELAPSED_TIME) * 0.08, 0, 1, 0)
 
         if i == state.indice_menu:
-            glScalef(1.4, 1.4, 1.4)
+            glScalef(1.3, 1.3, 1.3)
             tag = "P1" if state.fase_seleccion == 1 else "P2"
-            # Dibujar etiqueta sobre el personaje
-            draw_text(-0.5, 4, tag)
+            draw_text(-0.5, 5, tag, color=(1, 1, 0))
         else:
-            glScalef(0.8, 0.8, 0.8)
+            glScalef(0.7, 0.7, 0.7)
             glColor3f(0.3, 0.3, 0.3)
 
-        # Dibujar el personaje según su tipo
-        if p.tipo == "gato": 
-            gato.draw_gato_full(p)
-        elif p.tipo == "lola": 
-            lola.draw_gato_full(p)
-        elif p.tipo == "mosca": 
-            mosca.draw_mosca_full(p)
-        
+        if p.tipo == "gato": gato.draw_gato_full(p)
+        elif p.tipo == "lola": lola.draw_gato_full(p)
+        elif p.tipo == "mosca": mosca.draw_mosca_full(p)
         glPopMatrix()
-# nuevo display para el menú multijugador
+
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
     
-    if state.en_menu_seleccion:
+    # MÁQUINA DE ESTADOS
+    if state.estado_actual == state.MENU_PRINCIPAL:
+        draw_main_menu()
+    
+    elif state.estado_actual == state.MENU_SELECCION:
         draw_multijugador_menu()
-    else:
+    
+    elif state.estado_actual == state.EN_JUEGO:
         camera.apply_camera()
         grid.draw_grid(size=30, step=1)
         grid.draw_axes()
         escenario.draw_scenery(state.scenario)
 
-        # JUGADOR 1
+        # jugaodr alguno (Gato, Lola o Mosca)
         glPushMatrix()
         glTranslatef(state.p1.x, state.p1.y, state.p1.z)
-        if state.p1.tipo == "gato": 
-            gato.draw_gato_full(state.p1)
-        elif state.p1.tipo == "mosca": 
-            mosca.draw_mosca_full(state.p1)
-        elif state.p1.tipo == "lola": 
-            lola.draw_gato_full(state.p1)
+        if state.p1.tipo == "gato": gato.draw_gato_full(state.p1)
+        elif state.p1.tipo == "mosca": mosca.draw_mosca_full(state.p1)
+        elif state.p1.tipo == "lola": lola.draw_gato_full(state.p1)
         glPopMatrix()
 
-        # JUGADOR 2
+        # jugador dos lo mismo
         glPushMatrix()
         glTranslatef(state.p2.x, state.p2.y, state.p2.z)
-        if state.p2.tipo == "gato": 
-            gato.draw_gato_full(state.p2)
-        elif state.p2.tipo == "mosca": 
-            mosca.draw_mosca_full(state.p2)
-        elif state.p2.tipo == "lola":  
-            lola.draw_gato_full(state.p2)
+        if state.p2.tipo == "gato": gato.draw_gato_full(state.p2)
+        elif state.p2.tipo == "mosca": mosca.draw_mosca_full(state.p2)
+        elif state.p2.tipo == "lola": lola.draw_gato_full(state.p2)
         glPopMatrix()
 
         if state.show_instructions:
-            show_menu()
+            show_game_instructions()
         
     glutSwapBuffers()
+
 def reshape(w, h):
-    if h==0:
-        h=1
-    global width, height
-    width, height = w, h
+    if h == 0: h = 1
     glViewport(0, 0, w, h)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -205,24 +177,23 @@ def reshape(w, h):
 def main():
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
-    glutInitWindowSize(800, 600)
+    glutInitWindowSize(900, 700)
     gestor_audio.play_background_music(1)
-    glutCreateWindow(b"Timooteoen3D-OpenGL")
+    glutCreateWindow(b"Timoteo 3D - Menu System")
     init()
+    
     glutDisplayFunc(display)
     glutReshapeFunc(reshape) 
-    # 1. Letras y Números (W, A,S, D, T, 1, 2, 3...)
-    glutKeyboardFunc(input_handlers.keyboard)    
-    # 2. Flechas (Cámara)
-    glutSpecialFunc(input_handlers.special_keys)    
-    # 3. Mouse y Timer
+    glutKeyboardFunc(input_handlers.keyboard)     
+    glutSpecialFunc(input_handlers.special_keys)     
     glutMouseFunc(input_handlers.mouse)
     glutMotionFunc(input_handlers.motion)
     glutTimerFunc(16, update.update, 0)
     glutKeyboardUpFunc(input_handlers.keyboard_up)
     glutSpecialUpFunc(input_handlers.keyboard_special_up)
+    
     glutMainLoop()
-   
+
 if __name__ == "__main__":
     main()
-
+    

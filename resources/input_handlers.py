@@ -23,15 +23,16 @@ def motion(x, y):
 
 def special_keys(key, x, y):
     paso = 0.5 
-    # teclas para mover a lola (jugador 2)
-    if key == GLUT_KEY_UP: 
-        state.p2.z -= paso; state.p2.walking = True
-    elif key == GLUT_KEY_DOWN:
-         state.p2.z += paso; state.p2.walking = True
-    elif key == GLUT_KEY_LEFT: 
-        state.p2.x -= paso; state.p2.walking = True
-    elif key == GLUT_KEY_RIGHT: 
-        state.p2.x += paso; state.p2.walking = True
+    # si estamos se pueden mover 
+    if state.estado_actual == state.EN_JUEGO:
+        if key == GLUT_KEY_UP: 
+            state.p2.z -= paso; state.p2.walking = True
+        elif key == GLUT_KEY_DOWN:
+             state.p2.z += paso; state.p2.walking = True
+        elif key == GLUT_KEY_LEFT: 
+            state.p2.x -= paso; state.p2.walking = True
+        elif key == GLUT_KEY_RIGHT: 
+            state.p2.x += paso; state.p2.walking = True
     
     glutPostRedisplay()
 """
@@ -99,29 +100,46 @@ def keyboard(key, x, y):
 def keyboard(key, x, y):
     b = key 
     paso = 0.5
-    # logica para los papusjugadores
-    if state.en_menu_seleccion:
-        if b == b'a' or b == b'd': # Navegar
+    # --- 1. LÓGICA DEL MENÚ PRINCIPAL (BOTONES) ---
+    if state.estado_actual == state.MENU_PRINCIPAL:
+        if b == b'w' or b == b'W':
+            state.indice_boton = 0 # JUGAR
+            gestor_audio.play_action_sound("interest")
+        elif b == b's' or b == b'S':
+            state.indice_boton = 1 # SALIR
+            gestor_audio.play_action_sound("interest")
+            glutLeaveMainLoop()
+        elif b == b'\r': # ENTER
+            if state.indice_boton == 0:
+                state.estado_actual = state.MENU_SELECCION
+                state.en_menu_seleccion = True
+                gestor_audio.play_action_sound("happy")
+            else:
+                sys.exit()
+        elif key == b'\x1b': sys.exit()
+        glutPostRedisplay()
+        return
+
+    # --- 2. LÓGICA DE SELECCIÓN DE PERSONAJES ---
+    if state.estado_actual == state.MENU_SELECCION:
+        if b == b'a' or b == b'd': 
             state.indice_menu = (state.indice_menu + (1 if b == b'd' else -1)) % len(state.personajes_pool)
             gestor_audio.play_action_sound("interest")
         
         elif b == b'\r': # ENTER (Confirmar selección)
             if state.fase_seleccion == 1:
-                state.p1_tipo_elegido = state.personajes_pool[state.indice_menu].tipo
+                state.p1.tipo = state.personajes_pool[state.indice_menu].tipo
                 state.fase_seleccion = 2
                 gestor_audio.play_action_sound("happy")
             elif state.fase_seleccion == 2:
-                state.p2_tipo_elegido = state.personajes_pool[state.indice_menu].tipo
-                state.fase_seleccion = 3
-                state.en_menu_seleccion = False # Salir al juego
-                # Asignamos los tipos finales a los objetos p1 y p2 del juego
-                state.p1.tipo = state.p1_tipo_elegido
-                state.p2.tipo = state.p2_tipo_elegido
+                state.p2.tipo = state.personajes_pool[state.indice_menu].tipo
+                state.estado_actual = state.EN_JUEGO
+                state.en_menu_seleccion = False 
                 gestor_audio.play_action_sound("happy")
         
-        elif key == b'\x1b': glutLeaveMainLoop()
+        elif key == b'\x1b': state.estado_actual = state.MENU_PRINCIPAL
         glutPostRedisplay()
-        return # Detener aquí si estamos en menú
+        return
     # 1. movimientos timoteo
     if b == b'w': 
         state.p1.z -= paso
