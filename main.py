@@ -417,8 +417,6 @@ def draw_multijugador_menu():
         elif p.tipo == "KingLi": KingLi.draw_kingli_full(p)
         elif p.tipo == "amongus": amongus.draw_amongus_full(p)
         elif p.tipo == "meteoro": meteoro.draw_metetoro_full(p)
-        elif p.tipo == "meteoro": meteoro.draw_metetoro_full(p)
-
         glPopMatrix()
 
     # ==========================================

@@ -1,7 +1,7 @@
 from OpenGL.GL import *
 from Characteres.gato import draw_cube  
 import math
-import random 
+import time
 from Actions import state
 
 def set_sky_color(r, g, b):
@@ -10,114 +10,105 @@ def set_sky_color(r, g, b):
 def draw_floor(r, g, b):
     glColor3f(r, g, b)
     glBegin(GL_QUADS)
-    glVertex3f(-40, -0.01, -40)
-    glVertex3f(40, -0.01, -40)
-    glVertex3f(40, -0.01, 40)
-    glVertex3f(-40, -0.01, 40)
+    glVertex3f(-60, -0.01, -60)
+    glVertex3f(60, -0.01, -60)
+    glVertex3f(60, -0.01, 60)
+    glVertex3f(-60, -0.01, 60)
     glEnd()
 
-def draw_simple_tree(x, z, scale=1.0):
-    glPushMatrix()
-    glTranslatef(x, 0, z)
-    glScalef(scale, scale, scale)
-    # Tronco
-    glColor3f(0.4, 0.2, 0.1)
-    draw_cube(-0.2, 0, -0.2, 0.2, 1.2, 0.2)
-    # Copa (dos niveles)
-    glColor3f(0.1, 0.5, 0.1)
-    draw_cube(-0.8, 1.2, -0.8, 0.8, 2.0, 0.8) # Base de la copa
-    glColor3f(0.2, 0.7, 0.2)
-    draw_cube(-0.5, 2.0, -0.5, 0.5, 2.8, 0.5) # Punta
-    glPopMatrix()
+# --- NUEVOS ELEMENTOS DE ESCENARIO ---
 
 def draw_scenery(scenario_id):
-    if scenario_id == 1:   # parque
-        set_sky_color(0.4, 0.7, 1.0)
-        draw_floor(0.3, 0.7, 0.3)
-        for i in range(-25, 26, 8):
-            draw_simple_tree(i, -20, 1.2)
-            draw_simple_tree(i, 20, 1.0)
-            draw_simple_tree(-20, i, 1.1)
-            draw_simple_tree(20, i, 0.9)
+    t = time.time() # Para animaciones sutiles
 
-    elif scenario_id == 2:   # Ccallejon
-        set_sky_color(0.01, 0.01, 0.08)
-        draw_floor(0.15, 0.15, 0.15)
-        # Edificios de fondo (cubos grandes)
-        glColor3f(0.1, 0.1, 0.12)
-        for x in [-20, -10, 10, 20]:
-            draw_cube(x-3, 0, -25, x+3, 10 + (x%3), -15)
-        # Farolas con luz
-        for z in [-15, 0, 15]:
-            glPushMatrix()
-            glTranslatef(8, 0, z)
-            glColor3f(0.2, 0.2, 0.2)
-            draw_cube(-0.2, 0, -0.2, 0.2, 4, 0.2) # Poste
-            glColor3f(1.0, 1.0, 0.6) # Luz
-            draw_cube(-0.4, 4, -0.4, 0.4, 4.5, 0.4)
-            glPopMatrix()
+    if scenario_id == 1:   # CIUDAD FUTURISTA (Tron Style)
+        set_sky_color(0.0, 0.0, 0.1) # Azul muy oscuro
+        draw_floor(0.1, 0.1, 0.2)
+        # Rejilla luminosa en el suelo
+        glColor3f(0.0, 1.0, 1.0)
+        for i in range(-50, 51, 10):
+            draw_cube(i, -0.01, -50, i+0.1, 0.02, 50)
+            draw_cube(-50, -0.01, i, 50, 0.02, i+0.1)
+        # Edificios con bordes brillantes
+        for x, z in [(-30, -30), (30, -30), (-30, 30), (30, 30)]:
+            glColor3f(0.1, 0.1, 0.3)
+            draw_cube(x-5, 0, z-5, x+5, 20, z+5)
+            glColor3f(0.0, 0.8, 1.0) # Detalle luz
+            draw_cube(x-5.1, 18, z-5.1, x+5.1, 19, z+5.1)
 
-    elif scenario_id == 3:   # teatro
-        set_sky_color(0.05, 0.0, 0.1)
-        draw_floor(0.6, 0.0, 0.0)
-        # Columnas doradas laterales
-        glColor3f(0.8, 0.6, 0.2)
-        for pos in [(-12, -15), (-12, 0), (12, -15), (12, 0)]:
-            draw_cube(pos[0]-0.5, 0, pos[1]-0.5, pos[0]+0.5, 8, pos[1]+0.5)
+    elif scenario_id == 2:   # JARDÍN ZEN (Minimalista Japones)
+        set_sky_color(0.8, 0.9, 1.0) # Blanco azulado
+        draw_floor(0.9, 0.9, 0.8) # Arena clara
+        # Piedras decorativas
+        glColor3f(0.4, 0.4, 0.4)
+        draw_cube(-15, 0, -10, -5, 4, -2)
+        draw_cube(10, 0, 5, 14, 2, 9)
+        # Un arco Torii simple al fondo
+        glColor3f(0.8, 0.1, 0.1)
+        draw_cube(-10, 0, -40, -8, 15, -38) # Pilar L
+        draw_cube(8, 0, -40, 10, 15, -38)  # Pilar R
+        draw_cube(-12, 13, -41, 12, 15, -37) # Techo
 
-    elif scenario_id == 4:   #clima de nieve
-        set_sky_color(0.7, 0.85, 1.0)
-        draw_floor(1.0, 1.0, 1.0)
-        for i in range(12):
-            x = math.sin(i) * 20
-            z = math.cos(i) * 20
-            size = 1.0 + (i % 3) * 0.5
-            glPushMatrix()
-            glTranslatef(x, 0, z)
-            glColor3f(0.8, 0.9, 1.0)
-            draw_cube(-size, 0, -size, size, size*1.5, size)
-            glPopMatrix()
-
-    elif scenario_id == 5:   #volcan
-        set_sky_color(0.2, 0.05, 0.0)
-        draw_floor(0.1, 0.1, 0.1) # Suelo negro/ceniza
-        # Río de lava central
-        glColor3f(1.0, 0.3, 0.0)
-        draw_cube(-30, -0.02, -5, 30, 0.05, 5)
-        # El volcán al fondo
-        glColor3f(0.3, 0.2, 0.2)
-        draw_cube(-8, 0, -25, 8, 10, -15)
-        glColor3f(1.0, 0.5, 0.0) # Lava en la cima
-        draw_cube(-3, 10, -22, 3, 10.5, -18)
-
-    elif scenario_id == 6:   # desierto
-        set_sky_color(1.0, 0.7, 0.3)
-        draw_floor(0.95, 0.8, 0.4)
+    elif scenario_id == 3:   # MINA DE CRISTALES (Cueva)
+        set_sky_color(0.05, 0.02, 0.1)
+        draw_floor(0.1, 0.05, 0.15)
+        # Cristales que "crecen" del suelo
         for i in range(8):
-            x, z = math.sin(i)*15, math.cos(i)*18
-            # Cactus con brazos
-            glPushMatrix()
-            glTranslatef(x, 0, z)
-            glColor3f(0.2, 0.5, 0.1)
-            draw_cube(-0.3, 0, -0.3, 0.3, 2.5, 0.3) # Tronco
-            draw_cube(0.3, 1.2, -0.2, 1.0, 1.5, 0.2) # Brazo
-            glPopMatrix()
+            ang = i * 45
+            x, z = math.cos(ang)*20, math.sin(ang)*20
+            h = 5 + math.sin(t + i)*2 # Animación de levitación
+            glColor3f(0.6, 0.0, 1.0) # Púrpura brillante
+            draw_cube(x-1, 0, z-1, x+1, h, z+1)
+            glColor3f(1, 0.5, 1) # Punta brillante
+            draw_cube(x-0.5, h, z-0.5, x+0.5, h+1, z+0.5)
 
-    elif scenario_id == 7:   # espacio 
-        set_sky_color(0.0, 0.0, 0.02)
-        draw_floor(0.02, 0.02, 0.05)
-        # Estrellas
-        glBegin(GL_POINTS)
-        for i in range(200):
+    elif scenario_id == 4:   # ISLA FLOTANTE (Cielo despejado)
+        set_sky_color(0.4, 0.8, 1.0)
+        draw_floor(0.3, 0.8, 0.3)
+        # Cascadas de cubos (nubes bajas)
+        for i in range(10):
             glColor3f(1, 1, 1)
-            glVertex3f(math.sin(i)*30, 5 + (i%10), math.cos(i)*30)
-        glEnd()
-        # Meteoritos flotantes
-        for i in range(5):
-            glColor3f(0.4, 0.4, 0.45)
-            x, y, z = -15 + i*7, 3 + (i%2), -10
-            draw_cube(x, y, z, x+1.5, y+1.5, z+1.5)
+            cx, cz = math.sin(i)*45, math.cos(i)*45
+            draw_cube(cx, -5, cz, cx+5, -2, cz+5)
+        # Árboles estilizados (Copa cuadrada grande)
+        glColor3f(0.5, 0.3, 0.1)
+        draw_cube(-2, 0, -20, 2, 8, -16)
+        glColor3f(0.1, 0.7, 0.1)
+        draw_cube(-6, 8, -24, 6, 16, -12)
 
-    # Recorre los 3 objetos de colisiones
+    elif scenario_id == 5:   # LABORATORIO DE ENERGÍA
+        set_sky_color(0.1, 0.1, 0.1)
+        draw_floor(0.3, 0.3, 0.3) # Metal
+        # Bobinas de Tesla / Pilares de energía
+        pulse = (math.sin(t * 5) + 1) / 2
+        for x in [-20, 20]:
+            glColor3f(0.4, 0.4, 0.4)
+            draw_cube(x-2, 0, -5, x+2, 12, 5)
+            glColor3f(1.0 * pulse, 1.0, 0.0) # Rayo amarillo pulsante
+            draw_cube(x-0.5, 12, -0.5, x+0.5, 20, 0.5)
+
+    elif scenario_id == 6:   # DIMENSIÓN DE ERROR (Glitched)
+        set_sky_color(0.0, 0.0, 0.0)
+        draw_floor(0.1, 0.0, 0.1)
+        # Cubos de colores aleatorios volando
+        for i in range(15):
+            x = math.sin(t + i) * 30
+            y = 5 + math.cos(i) * 5
+            z = math.cos(t + i) * 30
+            if i % 2 == 0: glColor3f(1, 0, 0.3)
+            else: glColor3f(0, 1, 0.3)
+            draw_cube(x, y, z, x+2, y+2, z+2)
+
+    elif scenario_id == 7:   # OCÉANO DE DATOS (Abismo)
+        set_sky_color(0.0, 0.1, 0.2)
+        draw_floor(0.0, 0.2, 0.4)
+        # Pilares que suben y bajan (como un ecualizador)
+        for i in range(-30, 31, 10):
+            h = 4 + math.sin(t + i) * 3
+            glColor3f(0.0, 0.5, 0.8)
+            draw_cube(i-2, 0, -35, i+2, h, -31)
+            draw_cube(i-2, 0, 31, i+2, h, 35)
+
+    # Dibujar objetos con colisión
     for obj in state.objetos_escenas:
         obj.draw()

@@ -62,9 +62,6 @@ personajes_pool = [
     PlayerState(nombre="King Li", tipo="KingLi"), 
     PlayerState(nombre="Among Us", tipo="amongus"),
     PlayerState(nombre="Meteoro", tipo="meteoro"),
-    # quedan 2 
-    PlayerState(nombre="Lola 2", tipo="lola"),
-    PlayerState(nombre="Mosca 2", tipo="mosca")
 ]
 
 # como se seleccionan 
@@ -75,6 +72,9 @@ scenario = 1
 sonido_activo = True
 show_instructions = True
 scene_bounds = {"x": (-20.0, 20.0), "z": (-20.0, 20.0)}
+mouse_down = False
+last_mouse_x = 0
+last_mouse_y = 0
 
 objetos_escenas = [
     CollisionObject(5.0, 5.0, 1.5, (0.6, 0.3, 0.1), "Caja", "surprised", "jump", "surprised"),

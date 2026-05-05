@@ -123,10 +123,22 @@ def keyboard(key, x, y):
     # --- 2. LÓGICA DE SELECCIÓN DE PERSONAJES ---
     if state.estado_actual == state.MENU_SELECCION:
         if b == b'a' or b == b'd': 
+            # Cambiamos el índice del personaje
             state.indice_menu = (state.indice_menu + (1 if b == b'd' else -1)) % len(state.personajes_pool)
+            
+            # Obtenemos el tipo de personaje actual (ej. "gato", "lola", "amongus")
+            personaje_actual = state.personajes_pool[state.indice_menu].tipo
+            
+            # 1. Sonido de click/interés (interfaz)
             gestor_audio.play_action_sound("interest")
+            
+            # 2. Sonido único del personaje (se interrumpe automáticamente al cambiar)
+            gestor_audio.play_character_selection_sound(personaje_actual)
         
         elif b == b'\r': # ENTER (Confirmar selección)
+            # Silenciamos cualquier voz de personaje al entrar al juego
+            gestor_audio.stop_voices()
+            
             if state.fase_seleccion == 1:
                 state.p1.tipo = state.personajes_pool[state.indice_menu].tipo
                 state.fase_seleccion = 2
@@ -136,8 +148,13 @@ def keyboard(key, x, y):
                 state.estado_actual = state.EN_JUEGO
                 state.en_menu_seleccion = False 
                 gestor_audio.play_action_sound("happy")
+                # Al comenzar el juego, podemos disparar la música del primer escenario
+                gestor_audio.play_background_music(state.scenario)
         
-        elif key == b'\x1b': state.estado_actual = state.MENU_PRINCIPAL
+        elif key == b'\x1b': 
+            state.estado_actual = state.MENU_PRINCIPAL
+            gestor_audio.stop_voices()
+            
         glutPostRedisplay()
         return
     # 1. movimientos timoteo
