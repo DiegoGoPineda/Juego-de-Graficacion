@@ -240,6 +240,8 @@ def draw_gato_full(p):
         x_offset = math.sin(p.reaction_timer * 2.0) * 0.1
         glTranslatef(x_offset, 0, 0)
 
+    # Rotación según dirección de movimiento
+    glRotatef(p.direction_angle, 0, 1, 0)
     glRotatef(-90, 0, 1, 0)
     glRotatef(-90, 1, 0, 0)
     glTranslatef(-1.5, -0.5, 0.0)

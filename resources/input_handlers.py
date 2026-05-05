@@ -26,13 +26,13 @@ def special_keys(key, x, y):
     # si estamos se pueden mover 
     if state.estado_actual == state.EN_JUEGO:
         if key == GLUT_KEY_UP: 
-            state.p2.z -= paso; state.p2.walking = True
+            state.p2.z -= paso; state.p2.walking = True; state.p2.direction_angle = 180
         elif key == GLUT_KEY_DOWN:
-             state.p2.z += paso; state.p2.walking = True
+             state.p2.z += paso; state.p2.walking = True; state.p2.direction_angle = 0
         elif key == GLUT_KEY_LEFT: 
-            state.p2.x -= paso; state.p2.walking = True
+            state.p2.x -= paso; state.p2.walking = True; state.p2.direction_angle = 270
         elif key == GLUT_KEY_RIGHT: 
-            state.p2.x += paso; state.p2.walking = True
+            state.p2.x += paso; state.p2.walking = True; state.p2.direction_angle = 90
     
     glutPostRedisplay()
 """
@@ -144,15 +144,19 @@ def keyboard(key, x, y):
     if b == b'w': 
         state.p1.z -= paso
         state.p1.walking = True
+        state.p1.direction_angle = 180
     elif b == b's': 
         state.p1.z += paso
         state.p1.walking = True
+        state.p1.direction_angle = 0
     elif b == b'a': 
         state.p1.x -= paso
         state.p1.walking = True
+        state.p1.direction_angle = 270
     elif b == b'd': 
         state.p1.x += paso
         state.p1.walking = True
+        state.p1.direction_angle = 90
 
     # 2. ANIMACIONES MANUALES TIMOTEO (p1)
     # Usamos teclas cercanas: Q, E, R, F, G

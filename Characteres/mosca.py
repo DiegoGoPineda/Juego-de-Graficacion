@@ -118,7 +118,9 @@ def draw_mouth(p):
 
 def draw_mosca_full(p):
     quad = gluNewQuadric()
-    glPushMatrix()   
+    glPushMatrix()
+    # Rotación según dirección de movimiento
+    glRotatef(p.direction_angle, 0, 1, 0)
     glTranslatef(0, 1.65, 0) # pa que no este abajo
     # --- LÓGICA DE LAS 7 ACCIONES ---
     if p.walking:

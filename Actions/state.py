@@ -15,6 +15,7 @@ class PlayerState:
         self.walking = False
         self.animation_angle = 0.0
         self.leg_swing = 0.0
+        self.direction_angle = 0.0  # Ángulo de rotación basado en dirección de movimiento
         
         # las que comparten los personajes
         self.moving_tail = False
@@ -59,6 +60,8 @@ personajes_pool = [
     PlayerState(nombre="Mosca", tipo="mosca"),
     # papuling
     PlayerState(nombre="King Li", tipo="KingLi"), 
+    PlayerState(nombre="Among Us", tipo="amongus"),
+    PlayerState(nombre="Meteoro", tipo="meteoro"),
     # quedan 2 
     PlayerState(nombre="Lola 2", tipo="lola"),
     PlayerState(nombre="Mosca 2", tipo="mosca")

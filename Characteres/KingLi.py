@@ -94,6 +94,8 @@ def draw_kingli_full(p):
     walk_angle = p.leg_swing 
     
     glPushMatrix()
+    # Rotación según dirección de movimiento
+    glRotatef(p.direction_angle, 0, 1, 0)
     glTranslatef(0, 0.4, 0)
     
     # Reacciones

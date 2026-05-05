@@ -146,6 +146,9 @@ def draw_tail(p):
 def draw_gato_full(p):
     glPushMatrix()
     
+    # Rotación según dirección de movimiento
+    glRotatef(p.direction_angle, 0, 1, 0)
+    
     # reaciones
     if p.reaction_type == "jump":
         # Salto parabólico usando el timer de reacción
