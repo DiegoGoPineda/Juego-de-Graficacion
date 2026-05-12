@@ -14,37 +14,29 @@ cam_speed = 0.2
 mouse_down = False
 last_mouse_x = 0
 last_mouse_y = 0
-"""
-def apply_camera():
+
+def apply_camera_to_player(player):
     global cam_pos, yaw, pitch
     
-    # Esto hace que la cámara siempre apunte al gato
-    glTranslatef(0, 0, -cam_pos[2]) # El zoom
+    glLoadIdentity()
+    
+    #  Ajuste de altura y distancia 
+    # cam_pos[2] es la distancia hacia atrás.
+    # El -1.8 en Y eleva la cámara para que mire un poco desde arriba
+    distancia_atras = -cam_pos[2] 
+    altura_camara = -1.8 
+    
+    glTranslatef(0, altura_camara, distancia_atras)
     glRotatef(-pitch, 1.0, 0.0, 0.0)
-    glRotatef(-yaw, 0.0, 1.0, 0.0)
     
-    # Trasladamos el mundo inverso a la posición del gato
-    glTranslatef(-state.gato_x, -1.5, -state.gato_z)
-"""
-def apply_camera():
-    global cam_pos, yaw, pitch
+    # rotacion:
+    # Hacemos que la camara gire según hacia donde mira el personaje.
+    # Restamos 180 para que se coloque detras.
+    glRotatef(player.direction_angle - 180, 0, 1, 0)
     
-    # 1. Calculamos el punto medio entre los dos gatos
-    # Esto asegura que ambos salgan en pantalla
-    mid_x = (state.p1.x + state.p2.x) / 2.0
-    mid_z = (state.p1.z + state.p2.z) / 2.0
-    
-    # 2. Aplicamos transformaciones
-    # El zoom (Z)
-    glTranslatef(0, 0, -cam_pos[2]) 
-    
-    # Rotaciones del mouse
-    glRotatef(-pitch, 1.0, 0.0, 0.0)
-    glRotatef(-yaw, 0.0, 1.0, 0.0)
-    
-    # 3. Trasladamos el mundo al punto medio
-    # Usamos -1.0 en Y para que los gatos no queden tan pegados al borde inferior
-    glTranslatef(-mid_x, -1.0, -mid_z)
+    # translacion
+    # Movemos el mundo a la posición inversa del jugador
+    glTranslatef(-player.x, -player.y, -player.z)
 
 def handle_special_keys(key, x, y):
     pass
@@ -77,7 +69,7 @@ def motion(x, y):
 
 def zoom_in():
     global cam_pos
-    # Acercamos la cámara reduciendo Z, con un limite para no atravesar al gato
+    # Acercamos la cámara reduciendo Z, con un limite para no atrevesar
     if cam_pos[2] > 2.0: 
         cam_pos[2] -= 0.5
     glutPostRedisplay()

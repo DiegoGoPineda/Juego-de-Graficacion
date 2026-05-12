@@ -50,8 +50,8 @@ shading_mode = "Gouraud" #
 is_shadow_pass = False   # Variable global para el estado de la luz
 
 # instancia de los 2 jugapapus
-p1 = PlayerState(x_inicial=-3.0, nombre="P1", tipo="gato")
-p2 = PlayerState(x_inicial=3.0, nombre="P2", tipo="lola")
+p1 = PlayerState(x_inicial=-99.0, nombre="P1", tipo="gato")
+p2 = PlayerState(x_inicial=99.0, nombre="P2", tipo="lola")
 
 # toods los pj que se pueden elegir en el menu de seleccion
 personajes_pool = [
