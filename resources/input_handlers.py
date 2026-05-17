@@ -33,9 +33,7 @@ def _move_player_camera_relative(player, x_dir, z_dir, paso):
         player.walking = True
         player.direction_angle = camera.direction_angle_from_vector(dx, dz)
 
-
 def special_keys(key, x, y):
-    # Rastrear teclas presionadas
     if state.estado_actual == state.EN_JUEGO:
         if state.level1_enabled and state.level1_phase == state.LEVEL1_TRIVIA and not state.level1_trivia_answered and state.level1_question_target == 'p2':
             if key == GLUT_KEY_UP:
@@ -77,11 +75,10 @@ def special_keys(key, x, y):
     
     glutPostRedisplay()
 
-#Versión mejorada para Multijugador y más controles de animación
 def keyboard(key, x, y):
     b = key 
     paso = 0.5
-    # logica del menu
+    
     if state.estado_actual == state.MENU_PRINCIPAL:
         if b == b'w' or b == b'W':
             state.indice_boton = (state.indice_boton - 1) % 3
@@ -112,14 +109,15 @@ def keyboard(key, x, y):
             return
         glutPostRedisplay()
         return
+
     if state.estado_actual == state.MENU_ESCENARIO:
         if b == b'\r':
             selected = (state.niveles_pool if state.modo_juego == 'niveles' else state.escenarios_pool)[state.indice_escenario]
             state.scenario = selected['id']
-            # Actualizar límites de escena
             if state.scenario in state.scenario_bounds:
                 state.scene_bounds = state.scenario_bounds[state.scenario]
             state.estado_actual = state.EN_JUEGO
+            
             if state.scenario == 4 and state.modo_juego == 'niveles':
                 state.level1_enabled = True
                 state.level1_phase = state.LEVEL1_WAITING
@@ -130,6 +128,24 @@ def keyboard(key, x, y):
                 state.level1_phase = state.LEVEL1_NONE
                 state.p1.x, state.p1.z = -3.0, 0.0
                 state.p2.x, state.p2.z = 3.0, 0.0
+
+            if state.scenario == 5 and state.modo_juego == 'niveles':
+                state.level2_game_over = False
+                state.level2_winner = None
+                state.level2_phase = state.LEVEL2_WAITING
+                state.level2_transition_alpha = 0.0
+                state.level2_countdown = 3
+                state.level2_countdown_timer = 0
+                state.level2_message = "CARGANDO NIVEL 2..."
+                state.level_balones_jugador = []
+                state.level_balones_spawn_timer = 0
+                state.p1.lives = 5
+                state.p2.lives = 5
+                state.p1.x, state.p1.z = state.level2_wait_positions[0]
+                state.p2.x, state.p2.z = state.level2_wait_positions[1]
+            else:
+                state.level2_game_over = False
+
             gestor_audio.play_background_music(state.scenario)
         elif state.modo_juego == 'libre':
             if b == b'1': state.indice_escenario = 0
@@ -147,6 +163,7 @@ def keyboard(key, x, y):
             state.indice_escenario = 0
         glutPostRedisplay()
         return
+
     if state.estado_actual == state.MENU_PAUSA:
         if b == b'\r':
             if state.indice_pausa == 0:
@@ -171,23 +188,21 @@ def keyboard(key, x, y):
             state.estado_actual = state.EN_JUEGO
         glutPostRedisplay()
         return
+
     if state.estado_actual == state.MENU_AYUDA:
         if b == b'\r' or key == b'\x1b':
             state.estado_actual = state.MENU_PAUSA
         glutPostRedisplay()
         return
-    # selecicon
+
     if state.estado_actual == state.MENU_SELECCION:
         if b == b'a' or b == b'd': 
-            # Cambiamos el índice del personaje
             state.indice_menu = (state.indice_menu + (1 if b == b'd' else -1)) % len(state.personajes_pool)
-            # Obtenemos el tipo de personaje actual (ej. "gato", "lola", "amongus")
             personaje_actual = state.personajes_pool[state.indice_menu].tipo
             gestor_audio.stop_voices()
             gestor_audio.play_character_selection_sound(personaje_actual)
             return
-        elif b == b'\r': # confirmacion
-            # Silenciamos cualquier voz de personaje al entrar al juego
+        elif b == b'\r': 
             gestor_audio.stop_voices()     
             if state.fase_seleccion == 1:
                 state.p1.tipo = state.personajes_pool[state.indice_menu].tipo
@@ -195,12 +210,8 @@ def keyboard(key, x, y):
                 gestor_audio.play_action_sound("happy")
             elif state.fase_seleccion == 2:
                 state.p2.tipo = state.personajes_pool[state.indice_menu].tipo
-                if state.modo_juego == 'libre':
-                    state.estado_actual = state.MENU_ESCENARIO
-                    state.indice_escenario = 0
-                else:  # modo 'niveles'
-                    state.estado_actual = state.MENU_ESCENARIO
-                    state.indice_escenario = 0
+                state.estado_actual = state.MENU_ESCENARIO
+                state.indice_escenario = 0
                 state.en_menu_seleccion = False 
                 gestor_audio.play_action_sound("happy")
         elif key == b'\x1b': 
@@ -208,10 +219,9 @@ def keyboard(key, x, y):
             gestor_audio.stop_voices()    
         glutPostRedisplay()
         return
-    # Manejo de fin de nivel 1
+
     if state.estado_actual == state.EN_JUEGO and state.level1_enabled and state.level1_phase == state.LEVEL1_FINISHED:
         if b == b'r' or b == b'R':
-            # Repetir nivel - volver a la sala de espera
             state.level1_enabled = True
             state.level1_phase = state.LEVEL1_WAITING
             state.p1.lives = 5
@@ -224,22 +234,52 @@ def keyboard(key, x, y):
             glutPostRedisplay()
             return
         elif b == b's' or b == b'S':
-            # Seleccionar nivel - volver al menú de selección
             state.estado_actual = state.MENU_ESCENARIO
             state.level1_enabled = False
             state.level1_phase = state.LEVEL1_NONE
             state.indice_escenario = 0
             state.p1.lives = 5
             state.p2.lives = 5
-            state.level1_game_over = False
+            state.p1.game_over = False
             state.level1_winner = None
             state.level1_loser = None
             glutPostRedisplay()
             return
-    # Manejo de trivia del nivel 1
+
+    if state.estado_actual == state.EN_JUEGO and state.scenario == 5 and getattr(state, 'level2_game_over', False):
+        if b == b'r' or b == b'R':
+            state.p1.lives = 5
+            state.p2.lives = 5
+            state.level2_game_over = False
+            state.level2_winner = None
+            state.level2_phase = state.LEVEL2_WAITING
+            state.level2_transition_alpha = 0.0
+            state.level2_countdown = 3
+            state.level2_countdown_timer = 0
+            state.level2_message = "CARGANDO NIVEL 2..."
+            if hasattr(state, 'level_balones_jugador'):
+                state.level_balones_jugador.clear()
+            state.level_balones_spawn_timer = 0
+            state.p1.x, state.p1.z = state.level2_wait_positions[0]
+            state.p2.x, state.p2.z = state.level2_wait_positions[1]
+            gestor_audio.play_action_sound("happy")
+            glutPostRedisplay()
+            return
+        elif b == b's' or b == b'S':
+            state.estado_actual = state.MENU_ESCENARIO
+            state.indice_escenario = 0
+            state.p1.lives = 5
+            state.p2.lives = 5
+            state.level2_game_over = False
+            state.level2_winner = None
+            state.level2_phase = getattr(state, 'LEVEL2_NONE', 0)
+            if hasattr(state, 'level_balones_jugador'):
+                state.level_balones_jugador.clear()
+            glutPostRedisplay()
+            return
+
     if state.estado_actual == state.EN_JUEGO and state.level1_enabled and state.level1_phase == state.LEVEL1_TRIVIA and not state.level1_trivia_answered:
         if state.level1_question_target == 'p1':
-            # Jugador 1: W/S para seleccionar, A para confirmar
             if b == b'w' or b == b'W':
                 state.level1_selected_option = (state.level1_selected_option - 1) % 3
                 return
@@ -251,42 +291,98 @@ def keyboard(key, x, y):
                 from Actions import update as update_module
                 update_module.process_level1_trivia_answer(is_correct)
                 return
-        else:  # P2
-            # Jugador 2: ENTER para confirmar
-            if b == b'\r':  # ENTER
+        else: 
+            if b == b'\r':  
                 is_correct = state.level1_selected_option == state.level1_current_question["correct"]
                 from Actions import update as update_module
                 update_module.process_level1_trivia_answer(is_correct)
                 return
-    # movimientos timoteo y lola (rastrear teclas presionadas para movimiento simultáneo)
-    if b == b'w':
-        state.keys_pressed[b'w'] = True
-    elif b == b's':
-        state.keys_pressed[b's'] = True
-    elif b == b'a':
-        state.keys_pressed[b'a'] = True
-    elif b == b'd':
-        state.keys_pressed[b'd'] = True
-    elif b == b'f' or b == b'F':  # salto con F para p1
+
+    if b == b'w': state.keys_pressed[b'w'] = True
+    elif b == b's': state.keys_pressed[b's'] = True
+    elif b == b'a': state.keys_pressed[b'a'] = True
+    elif b == b'd': state.keys_pressed[b'd'] = True
+        
+    # ACCIÓN / DISPARO JUGADOR 1 (E / e) Basado en dirección del jugador
+    elif b == b'e' or b == b'E':
+        if state.estado_actual == state.EN_JUEGO and state.scenario == 5 and state.level2_phase == state.LEVEL2_WAITING:
+            state.level2_phase = state.LEVEL2_TRANSITION
+            state.level2_transition_alpha = 0.0
+            state.level2_message = "CARGANDO NIVEL 2..."
+            state.level2_countdown = 3
+            state.level2_countdown_timer = 0
+            return
+        if getattr(state, 'level_balones_enabled', False) and state.estado_actual == state.EN_JUEGO and state.level2_phase == state.LEVEL2_ACTIVE:
+            if state.level2_cooldown_p1 == 0:
+                rad = math.radians(state.p1.direction_angle)
+                dir_x = math.sin(rad)
+                dir_z = math.cos(rad)
+                speed = 0.45 * state.level2_ball_speed_multiplier
+                
+                nuevo_balon = {
+                    'x': state.p1.x + (dir_x * 1.2),
+                    'y': 0.0,
+                    'z': state.p1.z + (dir_z * 1.2),
+                    'vx': dir_x * speed, 
+                    'vy': 0.0,
+                    'vz': dir_z * speed,
+                    'size': 1.2,
+                    'color': (0.2, 0.6, 1.0), 
+                    'owner': 'p1'
+                }
+                state.level_balones_jugador.append(nuevo_balon)
+                state.level2_cooldown_p1 = 20 
+                gestor_audio.play_action_sound("angry")
+        else:
+            state.p1.blinking = not state.p1.blinking
+            
+    elif b == b'f' or b == b'F': 
         if not state.p1.is_jumping:
             state.p1.is_jumping = True
             state.p1.jump_velocity = 0.9
-    # animaicones
-    elif b == b'q': # Cola
-        state.p1.moving_tail = not state.p1.moving_tail
-    elif b == b'e': # Parpadeo
-        state.p1.blinking = not state.p1.blinking
-    elif b == b'r': # Reacción de Salto
-        state.p1.reaction_type, state.p1.reaction_timer = "jump", 0
-    elif b == b'h': # Saludar (Arm waving)
-        state.p1.arm_waving = not state.p1.arm_waving
-    elif b == b'g': # Patas arriba
-        state.p1.front_paws_up_active = not state.p1.front_paws_up_active
-    elif b == b' ':  # Salto jugador 2 con ESPACIO
+            
+    # DISPARO JUGADOR 2 (ENTER) Basado en dirección del jugador
+    elif b == b'\r':
+        if state.estado_actual == state.EN_JUEGO and state.scenario == 5 and state.level2_phase == state.LEVEL2_WAITING:
+            state.level2_phase = state.LEVEL2_TRANSITION
+            state.level2_transition_alpha = 0.0
+            state.level2_message = "CARGANDO NIVEL 2..."
+            state.level2_countdown = 3
+            state.level2_countdown_timer = 0
+            return
+        if getattr(state, 'level_balones_enabled', False) and state.estado_actual == state.EN_JUEGO and state.level2_phase == state.LEVEL2_ACTIVE:
+            if state.level2_cooldown_p2 == 0:
+                rad = math.radians(state.p2.direction_angle)
+                dir_x = math.sin(rad)
+                dir_z = math.cos(rad)
+                speed = 0.45 * state.level2_ball_speed_multiplier
+                
+                nuevo_balon = {
+                    'x': state.p2.x + (dir_x * 1.2),
+                    'y': 0.0,
+                    'z': state.p2.z + (dir_z * 1.2),
+                    'vx': dir_x * speed, 
+                    'vy': 0.0,
+                    'vz': dir_z * speed,
+                    'size': 1.2,
+                    'color': (0.2, 1.0, 0.4), 
+                    'owner': 'p2'
+                }
+                state.level_balones_jugador.append(nuevo_balon)
+                state.level2_cooldown_p2 = 20 
+                gestor_audio.play_action_sound("angry")
+            return 
+           
+    elif b == b' ': 
         if not state.p2.is_jumping:
             state.p2.is_jumping = True
             state.p2.jump_velocity = 0.9
-    # escenarios y expresiones (para ambos personajes)
+            
+    elif b == b'q': state.p1.moving_tail = not state.p1.moving_tail
+    elif b == b'r': state.p1.reaction_type, state.p1.reaction_timer = "jump", 0
+    elif b == b'h': state.p1.arm_waving = not state.p1.arm_waving
+    elif b == b'g': state.p1.front_paws_up_active = not state.p1.front_paws_up_active
+        
     elif b in [b'1', b'2', b'3', b'4', b'5', b'6', b'7']:
         mapping = {
             b'1': ("neutral", 1, None),
@@ -299,22 +395,23 @@ def keyboard(key, x, y):
         }
         exp, scn, react = mapping[b]
         state.scenario = scn  
-        # Actualizar límites de escena
         if scn in state.scenario_bounds:
             state.scene_bounds = state.scenario_bounds[scn]
-        # Aplicacion para los 2
+            
         for p in [state.p1, state.p2]:
             p.expression = exp
             p.reaction_type = react
             p.reaction_timer = 0      
         gestor_audio.play_action_sound(exp)
         gestor_audio.play_background_music(state.scenario)
-    elif b == b'o': # activar/desactivar audio
+        
+    elif b == b'o': 
         state.sonido_activo = not state.sonido_activo
         if not state.sonido_activo:
-            pygame.mixer_music.pause() #sonido desactivado
+            pygame.mixer_music.pause()
         else:
-            pygame.mixer_music.unpause() #sonido de vuelta 
+            pygame.mixer_music.unpause()
+            
     elif b == b'z': camera.zoom_in()
     elif b == b'x': camera.zoom_out()
     elif b == b'c': camera.reset_camera()
@@ -332,29 +429,20 @@ def keyboard(key, x, y):
             state.estado_actual = state.MENU_PAUSA
         else:
             glutLeaveMainLoop()
+            
     glutPostRedisplay()
 
 def keyboard_up(key, x, y):
     b = key 
-    # Limpiar el estado de las teclas presionadas
-    if b == b'w':
-        state.keys_pressed[b'w'] = False
-    elif b == b'a':
-        state.keys_pressed[b'a'] = False
-    elif b == b's':
-        state.keys_pressed[b's'] = False
-    elif b == b'd':
-        state.keys_pressed[b'd'] = False
+    if b == b'w': state.keys_pressed[b'w'] = False
+    elif b == b'a': state.keys_pressed[b'a'] = False
+    elif b == b's': state.keys_pressed[b's'] = False
+    elif b == b'd': state.keys_pressed[b'd'] = False
     glutPostRedisplay()
 
 def keyboard_special_up(key, x, y):
-    # Limpiar el estado de las teclas especiales presionadas
-    if key == GLUT_KEY_UP:
-        state.keys_pressed['up'] = False
-    elif key == GLUT_KEY_DOWN:
-        state.keys_pressed['down'] = False
-    elif key == GLUT_KEY_LEFT:
-        state.keys_pressed['left'] = False
-    elif key == GLUT_KEY_RIGHT:
-        state.keys_pressed['right'] = False
+    if key == GLUT_KEY_UP: state.keys_pressed['up'] = False
+    elif key == GLUT_KEY_DOWN: state.keys_pressed['down'] = False
+    elif key == GLUT_KEY_LEFT: state.keys_pressed['left'] = False
+    elif key == GLUT_KEY_RIGHT: state.keys_pressed['right'] = False
     glutPostRedisplay()

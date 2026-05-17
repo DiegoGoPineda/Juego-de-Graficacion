@@ -39,6 +39,3 @@ class CollisionObject:
         colision_z = abs(gato_z - self.z) < (gato_margen + half_d)
         colision_y = gato_y < self.size
         return colision_x and colision_z and colision_y
-
-
-    

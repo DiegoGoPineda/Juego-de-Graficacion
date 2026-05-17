@@ -28,6 +28,7 @@ def draw_text(x, y, text, font=GLUT_BITMAP_8_BY_13, color=(0,0,0)):
     for char in text:
         glutBitmapCharacter(font, ord(char))
     glEnable(GL_LIGHTING)
+
 def draw_stroke_text(x, y, text, scale=0.3, color=(1,1,1), line_width=2.0):
     # estilo para titulos
     glDisable(GL_LIGHTING)
@@ -41,6 +42,7 @@ def draw_stroke_text(x, y, text, scale=0.3, color=(1,1,1), line_width=2.0):
     glPopMatrix()
     glLineWidth(1.0) # Restauramos el grosor normal
     glEnable(GL_LIGHTING)
+
 def draw_stats_bar(x, y, label, value, max_value=10, color=(0, 1, 0)):
     #titulo 
     draw_text(x, y + 4, label, GLUT_BITMAP_HELVETICA_12, (1, 1, 1))
@@ -49,7 +51,7 @@ def draw_stats_bar(x, y, label, value, max_value=10, color=(0, 1, 0)):
     glDisable(GL_DEPTH_TEST)
     glEnable(GL_BLEND) # brillo para la barra
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    # Configuración de dimensiones
+    # Configuración de dimensions
     offset_x = 100  # Espacio para el texto
     ancho_total = 200
     alto = 12
@@ -94,7 +96,6 @@ def draw_stats_bar(x, y, label, value, max_value=10, color=(0, 1, 0)):
     glEnable(GL_LIGHTING)
 
 def draw_players():
-    # Dibujamos a los jugadores según su tipo 
     # Jugador 1
     glPushMatrix()
     glTranslatef(state.p1.x, state.p1.y + state.p1.jump_offset + state.p1.walk_bob, state.p1.z)
@@ -155,16 +156,15 @@ def draw_ittol_logo(x, y, radius, angle=0.0):
         glVertex2f(radius * 0.3 * math.cos(theta), radius * 0.3 * math.sin(theta))
     glEnd() 
     glPopMatrix()
+
 def draw_arcade_stars(y_pos, tiempo_ms):
     glDisable(GL_LIGHTING)
     glDisable(GL_DEPTH_TEST)   
-    # Colores retro arcade: Rosa neón, Cyan y Amarillo
     colores = [(1.0, 0.2, 0.6), (0.0, 0.8, 1.0), (1.0, 0.9, 0.0)]  
-    start_x = 120  # Dónde empiezan
-    espaciado = 40 # Distancia entre estrellas  
+    start_x = 120  
+    espaciado = 40   
     for i in range(15):
         x = start_x + (i * espaciado)
-        # Magia matemática: Cambia el índice del color basado en la posición y el tiempo
         color_idx = int((tiempo_ms / 150) + i) % 3 
         glColor3f(*colores[color_idx])    
         glPushMatrix()
@@ -179,7 +179,6 @@ def draw_arcade_stars(y_pos, tiempo_ms):
     glEnable(GL_LIGHTING)
 
 def draw_main_menu():
-    # Fondo azul muy oscuro
     glClearColor(0.02, 0.05, 0.12, 1.0)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
@@ -206,22 +205,17 @@ def draw_main_menu():
     tiempo_actual = glutGet(GLUT_ELAPSED_TIME)
     draw_ittol_logo(400, 280, 120, angle=tiempo_actual * 0.02)
     glDisable(GL_DEPTH_TEST)
-    # Estrellas en la parte superior 
     draw_arcade_stars(560, tiempo_actual)
-    # Estrellas hasta abajo 
     draw_arcade_stars(60, tiempo_actual)
-    # titulo principal
     texto_titulo = "CONOCE-TEC"
     draw_stroke_text(165, 490, texto_titulo, scale=0.5, color=(1, 1, 1), line_width=4.0)
-    # Eslogan nuevo 
     texto_sub = "CONOCE EL NIDO"
     draw_stroke_text(265, 425, texto_sub, scale=0.2, color=(1.0, 0.6, 0.0), line_width=2.5)
     opciones = ["JUGAR", "MUNDO LIBRE", "SALIR"]
     for i, texto in enumerate(opciones):
-        y_base = 320 - (i * 100)  # Más espaciado y centrado 
+        y_base = 320 - (i * 100)  
         glDisable(GL_LIGHTING)
         if i == state.indice_boton:
-            # BOTÓN SELECCIONADO
             glColor3f(0.0, 0.3, 0.7) 
             glBegin(GL_QUADS)
             glVertex2f(270, y_base - 5); glVertex2f(530, y_base - 5)
@@ -233,14 +227,12 @@ def draw_main_menu():
             glVertex2f(270, y_base - 5); glVertex2f(530, y_base - 5)
             glVertex2f(530, y_base + 55); glVertex2f(270, y_base + 55)
             glEnd()  
-            # Punteros
             glBegin(GL_TRIANGLES)
             glVertex2f(230, y_base + 25); glVertex2f(260, y_base + 40); glVertex2f(260, y_base + 10)
             glVertex2f(570, y_base + 25); glVertex2f(540, y_base + 40); glVertex2f(540, y_base + 10)
             glEnd()
             color_texto = (1, 1, 1) 
         else:
-            # BOTÓN INACTIVO
             glColor3f(0.05, 0.05, 0.08)
             glBegin(GL_QUADS)
             glVertex2f(280, y_base); glVertex2f(520, y_base)
@@ -264,7 +256,6 @@ def draw_main_menu():
     glMatrixMode(GL_MODELVIEW)
 
 def show_game_instructions():
-    #intrucciones
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
     glLoadIdentity()
@@ -283,7 +274,6 @@ def show_game_instructions():
     for line in instructions:
         draw_text(20, y_pos, line, color=(1,1,1))
         y_pos -= 20
-
     glPopMatrix()
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
@@ -291,7 +281,6 @@ def show_game_instructions():
 
 def draw_multijugador_menu():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    
     stats = {
         "gato": {"nombre": "Timoteo", "vel": 9, "fza": 3, "salto": 8},
         "lola": {"nombre": "Lola", "vel": 4, "fza": 3, "salto": 5},
@@ -305,28 +294,26 @@ def draw_multijugador_menu():
     gluPerspective(45, 800/600, 0.1, 100.0)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    # Siga la cámara al personaje seleccionado en el menú
+    
     cam_x = (state.indice_menu - 2.5) * 5.5
     gluLookAt(cam_x, 1.5, 15, cam_x, 0, 0, 0, 1, 0) 
     glEnable(GL_LIGHTING)
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.8, 0.8, 0.8, 1.0]) 
     luz.apply_light_position() 
-    # en fila
+    
     for i, p in enumerate(state.personajes_pool):
         glPushMatrix()
         x_pos = (i - 2.5) * 5.5 
         glTranslatef(x_pos, -2.0, 0)
         if i == state.indice_menu:
-            # Seleccionado: Efecto de levitación y rotación
             bobbing = math.sin(glutGet(GLUT_ELAPSED_TIME) * 0.005) * 0.2
             glTranslatef(0, bobbing, 0)
             glScalef(1.4, 1.4, 1.4) 
             glRotatef(glutGet(GLUT_ELAPSED_TIME) * 0.08, 0, 1, 0)
         else:
-            # No seleccionados: Estáticos y pequeños
             glScalef(0.7, 0.7, 0.7)
             glColor3f(0.4, 0.4, 0.4) 
-        # Dibujar según tipo
+        
         if p.tipo == "gato": gato.draw_gato_full(p)
         elif p.tipo == "lola": lola.draw_gato_full(p)
         elif p.tipo == "mosca": mosca.draw_mosca_full(p)
@@ -334,6 +321,7 @@ def draw_multijugador_menu():
         elif p.tipo == "amongus": amongus.draw_amongus_full(p)
         elif p.tipo == "meteoro": meteoro.draw_metetoro_full(p)
         glPopMatrix()
+        
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
     glLoadIdentity()
@@ -343,10 +331,10 @@ def draw_multijugador_menu():
     glLoadIdentity()
     glDisable(GL_LIGHTING)
     glDisable(GL_DEPTH_TEST)
-    # Texto de instrucciones
+    
     msg = f"JUGADOR {state.fase_seleccion}: ELIGE A TU HALCON"
     draw_text(250, 550, msg, GLUT_BITMAP_HELVETICA_18, (1, 0.8, 0))
-    # Estadísticas del personaje actual
+    
     p_actual = state.personajes_pool[state.indice_menu]
     data = stats.get(p_actual.tipo, {"nombre": "???", "vel": 5, "fza": 5, "salto": 5})
     draw_text(50, 150, f"> {data['nombre']} <", GLUT_BITMAP_HELVETICA_18, (0, 1, 1))
@@ -360,11 +348,9 @@ def draw_multijugador_menu():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
-
 def _draw_centered_text(x, y, text, color=(1,1,1), font=GLUT_BITMAP_HELVETICA_18):
     text_width = len(text) * 8
     draw_text(x - text_width // 2, y, text, font=font, color=color)
-
 
 def draw_scenario_menu():
     width = glutGet(GLUT_WINDOW_WIDTH)
@@ -391,7 +377,7 @@ def draw_scenario_menu():
     current_pool = state.niveles_pool if state.modo_juego == 'niveles' else state.escenarios_pool
     num_scenarios = len(current_pool)
     cols = 3
-    rows = (num_scenarios + cols - 1) // cols  # Ceiling division
+    rows = (num_scenarios + cols - 1) // cols
 
     margin_x = 50
     margin_y = 150
@@ -451,7 +437,6 @@ def draw_scenario_menu():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
-
 def draw_pause_menu():
     width = glutGet(GLUT_WINDOW_WIDTH)
     height = glutGet(GLUT_WINDOW_HEIGHT)
@@ -508,7 +493,6 @@ def draw_pause_menu():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
-
 def draw_help_menu():
     width = glutGet(GLUT_WINDOW_WIDTH)
     height = glutGet(GLUT_WINDOW_HEIGHT)
@@ -529,11 +513,11 @@ def draw_help_menu():
     _draw_centered_text(width * 0.5, height - 90, "AYUDA", color=(1, 0.9, 0.4))
     controls = [
         "CONTROLES JUGADOR 1:",
-        "- Mover: W, A, S, D  |  Saltar: F",
+        "- Mover: W, A, S, D  |  Saltar: F  |  Disparar Balón: E (Nivel 2)",
         "- Trivia: W/S para elegir, A para confirmar",
         "",
         "CONTROLES JUGADOR 2:",
-        "- Mover: Flechas  |  Saltar: ESPACIO",
+        "- Mover: Flechas  |  Saltar: ESPACIO  |  Disparar Balón: ENTER (Nivel 2)",
         "- Trivia: Flechas Arriba/Abajo para elegir, ENTER para confirmar",
         "",
         "OBJETIVO DEL JUEGO Y COMO NO PERDER:",
@@ -562,16 +546,12 @@ def draw_help_menu():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
-
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    # estdos del juego
     if state.estado_actual == state.MENU_PRINCIPAL:
-        # El menú principal usa toda la pantalla
         glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT))
         draw_main_menu()
     elif state.estado_actual == state.MENU_SELECCION:
-        # El menú de selección usa toda la pantalla
         glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT))
         draw_multijugador_menu() 
     elif state.estado_actual == state.MENU_ESCENARIO:
@@ -591,34 +571,47 @@ def display():
         glViewport(0, 0, half_width, height)
         render_player_view(state.p1, half_width, height)
         draw_player_status(state.p1, 20, 560)
-        draw_text_2d(20, 20, "P1", (0, 1, 1)) # Indicador P1
+        draw_text_2d(20, 20, "P1", (0, 1, 1))
         # jugador 2
         glViewport(half_width, 0, half_width, height)
         render_player_view(state.p2, half_width, height)
         draw_player_status(state.p2, 20, 560)
-        draw_text_2d(20, 20, "P2", (1, 0.5, 0)) # Indicador P2
+        draw_text_2d(20, 20, "P2", (1, 0.5, 0))
+        
         draw_level1_overlay(width, height)
+        draw_level2_overlay(width, height) # Nueva interfaz del Nivel de Balones
+     
     glutSwapBuffers()
 
 def render_player_view(player_to_follow, view_w, view_h):
-    # reneder de jugador
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(45, view_w / view_h, 0.1, 100.0)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    # aplicamos la camara para seguir al jugador
+    
     camera.apply_camera_to_player(player_to_follow)
-    # Iluminación
     luz.apply_light_position()
     luz.apply_shading()
-    # Dibujar Escenario y Grid
+    
     grid.draw_grid(size=30, step=1)
     grid.draw_axes()
     escenario.draw_scenery(state.scenario)
+    
     if state.level1_enabled and state.level1_phase == state.LEVEL1_ACTIVE:
         for hazard in state.level1_hazards:
             hazard.draw()
+
+
+    if getattr(state, 'level_balones_enabled', False):
+        for balon in getattr(state, 'level_balones_jugador', []):
+            glPushMatrix()
+            glTranslatef(balon['x'], balon['y'], balon['z'])
+            glColor3f(*balon['color'])
+            # Renderizamos una esfera sólida como balón usando su atributo 'size'
+            glutSolidSphere(balon['size'], 16, 16)
+            glPopMatrix()
+
     # Dibujar Sombras de ambos jugadores
     state.is_shadow_pass = True
     glDisable(GL_LIGHTING)
@@ -629,6 +622,7 @@ def render_player_view(player_to_follow, view_w, view_h):
     glPopMatrix()
     glEnable(GL_LIGHTING)
     state.is_shadow_pass = False
+    
     # dibujar jugadores normalmente
     draw_players()
 
@@ -646,11 +640,9 @@ def draw_text_2d(x, y, text, color):
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
-
 def draw_player_status(player, x, y):
     label = f"{player.nombre} - Vidas: {player.lives}"
     draw_text_2d(x, y, label, (1, 1, 1))
-
 
 def draw_level1_overlay(width, height):
     if not state.level1_enabled:
@@ -671,31 +663,24 @@ def draw_level1_overlay(width, height):
     elif state.level1_phase == state.LEVEL1_TRANSITION:
         glColor4f(0, 0, 0, state.level1_transition_alpha)
         glBegin(GL_QUADS)
-        glVertex2f(0, 0)
-        glVertex2f(800, 0)
-        glVertex2f(800, 600)
-        glVertex2f(0, 600)
+        glVertex2f(0, 0); glVertex2f(800, 0)
+        glVertex2f(800, 600); glVertex2f(0, 600)
         glEnd()
         draw_stroke_text(200, 330, state.level1_message, scale=0.4, color=(1, 1, 1), line_width=2.0)
     elif state.level1_phase == state.LEVEL1_COUNTDOWN:
         glColor4f(0, 0, 0, 0.85)
         glBegin(GL_QUADS)
-        glVertex2f(0, 0)
-        glVertex2f(800, 0)
-        glVertex2f(800, 600)
-        glVertex2f(0, 600)
+        glVertex2f(0, 0); glVertex2f(800, 0)
+        glVertex2f(800, 600); glVertex2f(0, 600)
         glEnd()
         draw_stroke_text(320, 320, str(max(state.level1_countdown, 1)), scale=0.8, color=(1, 1, 1), line_width=5.0)
         draw_text(300, 260, "Cuenta regresiva...", GLUT_BITMAP_HELVETICA_18, (1, 1, 1))
     elif state.level1_phase == state.LEVEL1_TRIVIA:
-        # Solo mostrar trivia en la pantalla del jugador que fue golpeado
         if state.level1_question_target == 'p1':
             glColor4f(0, 0, 0, 0.85)
             glBegin(GL_QUADS)
-            glVertex2f(0, 0)
-            glVertex2f(400, 0)
-            glVertex2f(400, 600)
-            glVertex2f(0, 600)
+            glVertex2f(0, 0); glVertex2f(400, 0)
+            glVertex2f(400, 600); glVertex2f(0, 600)
             glEnd()
             y_start = 550
             draw_text(20, y_start, "TRIVIA", GLUT_BITMAP_HELVETICA_18, (1, 1, 0))
@@ -717,10 +702,8 @@ def draw_level1_overlay(width, height):
                     if i == state.level1_selected_option:
                         glColor3f(0.2, 0.5, 0.2)
                         glBegin(GL_QUADS)
-                        glVertex2f(15, opt_y - 5)
-                        glVertex2f(385, opt_y - 5)
-                        glVertex2f(385, opt_y + 15)
-                        glVertex2f(15, opt_y + 15)
+                        glVertex2f(15, opt_y - 5); glVertex2f(385, opt_y - 5)
+                        glVertex2f(385, opt_y + 15); glVertex2f(15, opt_y + 15)
                         glEnd()
                     draw_text(25, opt_y, f"{chr(65+i)}) {opcion}", GLUT_BITMAP_HELVETICA_12, color)
                     opt_y -= 30
@@ -729,10 +712,8 @@ def draw_level1_overlay(width, height):
         elif state.level1_question_target == 'p2':
             glColor4f(0, 0, 0, 0.85)
             glBegin(GL_QUADS)
-            glVertex2f(400, 0)
-            glVertex2f(800, 0)
-            glVertex2f(800, 600)
-            glVertex2f(400, 600)
+            glVertex2f(400, 0); glVertex2f(800, 0)
+            glVertex2f(800, 600); glVertex2f(400, 600)
             glEnd()
             y_start = 550
             draw_text(420, y_start, "TRIVIA", GLUT_BITMAP_HELVETICA_18, (1, 1, 0))
@@ -754,10 +735,8 @@ def draw_level1_overlay(width, height):
                     if i == state.level1_selected_option:
                         glColor3f(0.2, 0.5, 0.2)
                         glBegin(GL_QUADS)
-                        glVertex2f(415, opt_y - 5)
-                        glVertex2f(785, opt_y - 5)
-                        glVertex2f(785, opt_y + 15)
-                        glVertex2f(415, opt_y + 15)
+                        glVertex2f(415, opt_y - 5); glVertex2f(785, opt_y - 5)
+                        glVertex2f(785, opt_y + 15); glVertex2f(415, opt_y + 15)
                         glEnd()
                     draw_text(425, opt_y, f"{chr(65+i)}) {opcion}", GLUT_BITMAP_HELVETICA_12, color)
                     opt_y -= 30
@@ -766,10 +745,8 @@ def draw_level1_overlay(width, height):
     elif state.level1_phase == state.LEVEL1_FINISHED:
         glColor4f(0, 0, 0, 1.0)
         glBegin(GL_QUADS)
-        glVertex2f(0, 0)
-        glVertex2f(800, 0)
-        glVertex2f(800, 600)
-        glVertex2f(0, 600)
+        glVertex2f(0, 0); glVertex2f(800, 0)
+        glVertex2f(800, 600); glVertex2f(0, 600)
         glEnd()
         winner_name = state.p1.nombre if state.level1_winner == 'p1' else state.p2.nombre
         draw_stroke_text(150, 400, f"GANA: {winner_name}", scale=0.5, color=(1, 1, 0), line_width=4.0)
@@ -784,9 +761,91 @@ def draw_level1_overlay(width, height):
     glMatrixMode(GL_MODELVIEW)
 
 
+def draw_level2_overlay(width, height):
+    if state.scenario != 5 or not hasattr(state, 'level2_phase') or state.level2_phase == state.LEVEL2_NONE:
+        return
+
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    gluOrtho2D(0, 800, 0, 600)
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+    glDisable(GL_LIGHTING)
+    glDisable(GL_DEPTH_TEST)
+
+
+    if not getattr(state, 'level2_game_over', False):
+        # Alineación hacia la esquina superior izquierda (X = 20)
+        draw_text(20, 530, "¡BATALLA DE BALONES EN EL NIDO!", GLUT_BITMAP_HELVETICA_12, (0.0, 0.9, 1.0))
+        draw_text(20, 510, "Objetivo: Resta vidas al rival disparando balones.", GLUT_BITMAP_HELVETICA_10, (1, 1, 1))
+        draw_text(20, 490, "P1 Controles: WASD | E para Disparar", GLUT_BITMAP_HELVETICA_10, (0.4, 1.0, 0.4))
+        draw_text(20, 470, "P2 Controles: Flechas | ENTER para Disparar", GLUT_BITMAP_HELVETICA_10, (1.0, 0.6, 0.0))
+
+        if state.level2_phase == state.LEVEL2_WAITING:
+            draw_text(150, 320, "Sala de espera: coloquense listos para la batalla", GLUT_BITMAP_HELVETICA_18, (1, 1, 0))
+            draw_text(220, 290, "Presionen sus botones de disparo para iniciar", GLUT_BITMAP_HELVETICA_12, (1, 1, 1))
+            
+        elif state.level2_phase == state.LEVEL2_TRANSITION:
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glColor4f(0, 0, 0, getattr(state, 'level2_transition_alpha', 0.7))
+            glBegin(GL_QUADS)
+            glVertex2f(0, 0); glVertex2f(800, 0)
+            glVertex2f(800, 600); glVertex2f(0, 600)
+            glEnd()
+            glDisable(GL_BLEND)
+            
+            msg_nivel = getattr(state, 'level2_message', "CARGANDO NIVEL 2...")
+            draw_stroke_text(200, 300, msg_nivel, scale=0.4, color=(1, 1, 1), line_width=2.0)
+            
+        elif state.level2_phase == state.LEVEL2_COUNTDOWN:
+            glColor4f(0, 0, 0, 0.6)
+            glBegin(GL_QUADS)
+            glVertex2f(0, 0); glVertex2f(800, 0)
+            glVertex2f(800, 600); glVertex2f(0, 600)
+            glEnd()
+            
+            cuenta = str(max(getattr(state, 'level2_countdown', 3), 1))
+            draw_stroke_text(370, 300, cuenta, scale=0.8, color=(1, 1, 0), line_width=5.0)
+
+    else:
+        # Fondo oscuro completo
+        glColor4f(0.0, 0.0, 0.0, 1.0)
+        glBegin(GL_QUADS)
+        glVertex2f(0, 0); glVertex2f(800, 0)
+        glVertex2f(800, 600); glVertex2f(0, 600)
+        glEnd()
+        
+
+        ganador_id = getattr(state, 'level2_winner', None)
+        nombre_ganador = "EMPATE"
+        if ganador_id == 'p1':
+            nombre_ganador = state.p1.nombre
+        elif ganador_id == 'p2':
+            nombre_ganador = state.p2.nombre
+            
+
+        draw_stroke_text(150, 400, f"GANA : {nombre_ganador}", scale=0.5, color=(0.0, 0.9, 1.0), line_width=4.0)
+        
+  
+        draw_text(250, 300, "Presione una opcion:", GLUT_BITMAP_HELVETICA_18, (1, 1, 1))
+        draw_text(260, 260, "R - Repetir Nivel", GLUT_BITMAP_HELVETICA_18, (0.7, 1, 0.7))
+        draw_text(260, 230, "S - Seleccionar Nivel", GLUT_BITMAP_HELVETICA_18, (1.0, 0.6, 0.0))
+
+    glEnable(GL_DEPTH_TEST)
+    glEnable(GL_LIGHTING)
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+
 def reshape(w, h):
     if h == 0: h = 1
     glViewport(0, 0, w, h)
+
 
 def main():
     glutInit(sys.argv)
@@ -794,18 +853,26 @@ def main():
     glutInitWindowSize(900, 700)
     gestor_audio.play_background_music(1)
     glutCreateWindow(b"Timoteo 3D - Menu System")
-    init()   
+    init()
+    
+    # Vinculación de Callbacks de Dibujo y Ventana
     glutDisplayFunc(display)
-    glutReshapeFunc(reshape) 
-    glutKeyboardFunc(input_handlers.keyboard)     
-    glutSpecialFunc(input_handlers.special_keys)     
+    glutReshapeFunc(reshape)
+    
+    # Vinculación de Callbacks desde input_handlers
+    glutKeyboardFunc(input_handlers.keyboard)
+    glutSpecialFunc(input_handlers.special_keys)
     glutMouseFunc(input_handlers.mouse)
     glutMotionFunc(input_handlers.motion)
+    
+    # Sistema de tiempo de actualización física y lógica
     glutTimerFunc(16, update.update, 0)
+    
+    # Vinculación de Callbacks al soltar teclas
     glutKeyboardUpFunc(input_handlers.keyboard_up)
-    glutSpecialUpFunc(input_handlers.keyboard_special_up)  
+    glutSpecialUpFunc(input_handlers.keyboard_special_up)
+    
     glutMainLoop()
 
 if __name__ == "__main__":
     main()
-    
